@@ -1,0 +1,27 @@
+---
+// src/components/Sidebar.astro
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog'); // assumes collection named "blog"
+const tags = Array.from(
+  new Set(posts.flatMap(p => p.data.tags ?? []))
+).sort();
+---
+<aside class="hidden md:block w-64">
+  <div class="sticky top-20">
+    <h3 class="text-sm font-semibold uppercase mb-3">Topics</h3>
+    <ul class="space-y-2">
+      {tags.length ? (
+        tags.map(tag => (
+          <li>
+            <a class="hover:underline" href={`/tags/${encodeURIComponent(tag)}/`}>
+              {tag}
+            </a>
+          </li>
+        ))
+      ) : (
+        <li class="text-slate-500">No topics yet</li>
+      )}
+    </ul>
+  </div>
+</aside>
