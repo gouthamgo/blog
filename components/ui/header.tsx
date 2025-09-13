@@ -1,0 +1,47 @@
+import Link from 'next/link'
+import { Search } from 'lucide-react'
+import { ThemeToggle } from './theme-toggle'
+import { MobileMenu } from './mobile-menu'
+
+export function Header() {
+  return (
+    <header className="professional-header">
+      <nav className="professional-nav">
+        <div className="nav-brand">
+          <Link href="/" className="brand-logo">
+            My Tech Blog
+          </Link>
+        </div>
+
+        <div className="nav-items desktop-only">
+          <Link href="/" className="nav-item">
+            HOME
+          </Link>
+          <span className="nav-separator">•</span>
+          <Link href="/blog" className="nav-item">
+            BLOG
+          </Link>
+          <span className="nav-separator">•</span>
+          <Link href="/about" className="nav-item">
+            ABOUT
+          </Link>
+          <span className="nav-separator">•</span>
+          <button className="nav-search">
+            <Search size={16} />
+            <span className="search-text">SEARCH</span>
+            <kbd className="search-shortcut">⌘K</kbd>
+          </button>
+        </div>
+
+        <div className="nav-actions">
+          <div className="desktop-only">
+            <ThemeToggle />
+          </div>
+          <div className="mobile-only">
+            <MobileMenu />
+          </div>
+        </div>
+      </nav>
+    </header>
+  )
+}

@@ -1,0 +1,379 @@
+---
+title: "Building Scalable APIs: Best Practices and Patterns"
+description: "Learn essential patterns and practices for designing robust, scalable APIs that can handle growth and maintain performance under load."
+date: "2024-12-10"
+author: "Tech Blogger"
+image: "/images/api-hero.svg"
+tags: ["API", "Backend", "Scalability", "Performance", "Architecture"]
+---
+
+Building scalable APIs is crucial for modern applications that need to handle growing user bases and increasing data loads. In this comprehensive guide, we'll explore proven patterns and best practices for designing APIs that can scale effectively.
+
+## Core Principles of Scalable API Design
+
+### 1. Stateless Architecture
+
+Design your APIs to be stateless wherever possible. Each request should contain all the information needed to process it:
+
+```javascript
+// Good: Stateless endpoint
+app.get('/api/users/:id', (req, res) => {
+  const userId = req.params.id
+  const user = getUserById(userId)
+  res.json(user)
+})
+
+// Avoid: Stateful operations that depend on session
+app.get('/api/current-user', (req, res) => {
+  const user = req.session.user // Depends on server state
+  res.json(user)
+})
+```
+
+### 2. Resource-Based URLs
+
+Structure your endpoints around resources, not actions:
+
+```bash
+# Good: Resource-based
+GET    /api/users          # Get all users
+GET    /api/users/123      # Get user 123
+POST   /api/users          # Create user
+PUT    /api/users/123      # Update user 123
+DELETE /api/users/123      # Delete user 123
+
+# Avoid: Action-based
+POST   /api/createUser
+POST   /api/updateUser
+POST   /api/deleteUser
+```
+
+## Performance Optimization Strategies
+
+### Caching Layers
+
+Implement multiple levels of caching to reduce database load:
+
+```javascript
+const redis = require('redis')
+const client = redis.createClient()
+
+async function getUser(id) {
+  // Check cache first
+  const cached = await client.get(`user:${id}`)
+  if (cached) {
+    return JSON.parse(cached)
+  }
+
+  // Fetch from database
+  const user = await database.users.findById(id)
+
+  // Cache for 1 hour
+  await client.setex(`user:${id}`, 3600, JSON.stringify(user))
+
+  return user
+}
+```
+
+### Database Query Optimization
+
+Use efficient queries and proper indexing:
+
+```sql
+-- Create indexes for frequently queried fields
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_posts_created_at ON posts(created_at);
+CREATE INDEX idx_posts_author_id ON posts(author_id);
+
+-- Use LIMIT for pagination
+SELECT * FROM posts
+WHERE created_at < '2024-01-01'
+ORDER BY created_at DESC
+LIMIT 20;
+```
+
+### Connection Pooling
+
+Implement connection pooling to manage database connections efficiently:
+
+```javascript
+const { Pool } = require('pg')
+
+const pool = new Pool({
+  host: 'localhost',
+  port: 5432,
+  database: 'myapp',
+  user: 'postgres',
+  password: 'password',
+  max: 20,         // Maximum connections in pool
+  min: 5,          // Minimum connections in pool
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+})
+
+async function queryDatabase(query, params) {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(query, params)
+    return result.rows
+  } finally {
+    client.release() // Return connection to pool
+  }
+}
+```
+
+## Rate Limiting and Throttling
+
+Protect your API from abuse and ensure fair usage:
+
+```javascript
+const rateLimit = require('express-rate-limit')
+
+// Basic rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+// Different limits for different endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // Stricter limit for auth endpoints
+  skipSuccessfulRequests: true,
+})
+
+app.use('/api/', limiter)
+app.use('/api/auth/', authLimiter)
+```
+
+## Error Handling and Monitoring
+
+### Structured Error Responses
+
+Provide consistent error responses:
+
+```javascript
+class APIError extends Error {
+  constructor(message, statusCode = 500, code = 'INTERNAL_ERROR') {
+    super(message)
+    this.statusCode = statusCode
+    this.code = code
+  }
+}
+
+app.use((err, req, res, next) => {
+  if (err instanceof APIError) {
+    return res.status(err.statusCode).json({
+      error: {
+        code: err.code,
+        message: err.message,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      }
+    })
+  }
+
+  // Log unexpected errors
+  console.error('Unexpected error:', err)
+
+  res.status(500).json({
+    error: {
+      code: 'INTERNAL_ERROR',
+      message: 'An unexpected error occurred',
+      timestamp: new Date().toISOString(),
+      path: req.path
+    }
+  })
+})
+```
+
+### Health Checks and Monitoring
+
+Implement health check endpoints:
+
+```javascript
+app.get('/health', async (req, res) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    checks: {}
+  }
+
+  try {
+    // Check database connection
+    await pool.query('SELECT 1')
+    health.checks.database = 'healthy'
+  } catch (error) {
+    health.checks.database = 'unhealthy'
+    health.status = 'unhealthy'
+  }
+
+  try {
+    // Check cache connection
+    await client.ping()
+    health.checks.cache = 'healthy'
+  } catch (error) {
+    health.checks.cache = 'unhealthy'
+    health.status = 'unhealthy'
+  }
+
+  const statusCode = health.status === 'healthy' ? 200 : 503
+  res.status(statusCode).json(health)
+})
+```
+
+## Authentication and Security
+
+### JWT Token Management
+
+Implement secure token-based authentication:
+
+```javascript
+const jwt = require('jsonwebtoken')
+
+function generateTokens(user) {
+  const accessToken = jwt.sign(
+    { userId: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  )
+
+  const refreshToken = jwt.sign(
+    { userId: user.id },
+    process.env.REFRESH_SECRET,
+    { expiresIn: '7d' }
+  )
+
+  return { accessToken, refreshToken }
+}
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' })
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' })
+    }
+    req.user = user
+    next()
+  })
+}
+```
+
+## Pagination and Filtering
+
+Implement efficient pagination for large datasets:
+
+```javascript
+app.get('/api/posts', async (req, res) => {
+  const page = parseInt(req.query.page) || 1
+  const limit = Math.min(parseInt(req.query.limit) || 10, 100)
+  const offset = (page - 1) * limit
+
+  // Build dynamic filters
+  const filters = {}
+  if (req.query.author) filters.author_id = req.query.author
+  if (req.query.tag) filters.tags = { contains: req.query.tag }
+
+  const [posts, total] = await Promise.all([
+    database.posts.findMany({
+      where: filters,
+      orderBy: { created_at: 'desc' },
+      skip: offset,
+      take: limit,
+    }),
+    database.posts.count({ where: filters })
+  ])
+
+  res.json({
+    data: posts,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1
+    }
+  })
+})
+```
+
+## API Versioning
+
+Plan for future changes with proper versioning:
+
+```javascript
+// URL-based versioning
+app.use('/api/v1', v1Router)
+app.use('/api/v2', v2Router)
+
+// Header-based versioning
+app.use((req, res, next) => {
+  const version = req.headers['api-version'] || 'v1'
+  req.apiVersion = version
+  next()
+})
+
+// Graceful deprecation
+app.use('/api/v1/old-endpoint', (req, res) => {
+  res.set('Deprecation', 'true')
+  res.set('Sunset', 'Sat, 31 Dec 2024 23:59:59 GMT')
+  // Handle request...
+})
+```
+
+## Testing Scalable APIs
+
+Write comprehensive tests for your APIs:
+
+```javascript
+const request = require('supertest')
+const app = require('../app')
+
+describe('Users API', () => {
+  test('should handle high load', async () => {
+    const promises = []
+
+    // Simulate 100 concurrent requests
+    for (let i = 0; i < 100; i++) {
+      promises.push(
+        request(app)
+          .get('/api/users')
+          .expect(200)
+      )
+    }
+
+    const responses = await Promise.all(promises)
+    responses.forEach(response => {
+      expect(response.body).toHaveProperty('data')
+    })
+  })
+
+  test('should respect rate limits', async () => {
+    // Make requests up to the limit
+    for (let i = 0; i < 100; i++) {
+      await request(app).get('/api/users').expect(200)
+    }
+
+    // Next request should be rate limited
+    await request(app).get('/api/users').expect(429)
+  })
+})
+```
+
+## Conclusion
+
+Building scalable APIs requires careful consideration of architecture, performance, security, and maintainability. By following these best practices and patterns, you can create APIs that handle growth gracefully while maintaining excellent performance and reliability.
+
+Remember that scalability is not just about handling more requests—it's about building systems that can evolve and adapt to changing requirements while maintaining their core functionality and performance characteristics.
+
+The key is to start with solid foundations and iterate based on real-world usage patterns and performance metrics. Monitor your APIs closely, optimize bottlenecks as they appear, and always plan for the next level of scale.
