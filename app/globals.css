@@ -14,6 +14,109 @@ html.dark {
   background-color: #0f0f0f !important;
 }
 
+/* Aggressive targeting - all possible containers that could show white gaps */
+.dark *,
+.dark *::before,
+.dark *::after {
+  background-color: inherit !important;
+}
+
+.dark html,
+.dark body,
+.dark #__next,
+.dark #root,
+.dark [data-nextjs-scroll-focus-boundary],
+.dark main,
+.dark section,
+.dark article,
+.dark div,
+.dark header,
+.dark footer,
+.dark aside {
+  background-color: #0f0f0f !important;
+}
+
+/* Fix white gap between content and footer in dark mode */
+.dark main,
+.dark .page-wrapper,
+.dark .content-wrapper,
+.dark .min-h-screen,
+.dark .py-12,
+.dark .max-width-container {
+  background-color: #0f0f0f !important;
+}
+
+/* Ensure full height coverage in dark mode */
+.dark {
+  min-height: 100vh;
+  background-color: #0f0f0f !important;
+}
+
+/* SPECIFIC FIX: Target min-h-screen containers */
+.min-h-screen {
+  background-color: white;
+}
+
+.dark .min-h-screen {
+  background-color: #0f0f0f !important;
+}
+
+/* Remove any white margins/gaps in dark mode */
+.dark * {
+  box-sizing: border-box;
+}
+
+.dark #__next,
+.dark #__next > div {
+  background-color: #0f0f0f !important;
+  min-height: 100vh;
+}
+
+/* Dark mode fixes for specific layout components */
+.dark .layout-with-sidebar,
+.dark .main-content,
+.dark .sidebar,
+.dark article,
+.dark section,
+.dark .topic-page,
+.dark .legal-content,
+.dark .medium-article,
+.dark .about-content,
+.dark .contact-content {
+  background-color: #0f0f0f !important;
+}
+
+/* Ensure no white gaps on any page container */
+.dark div[class*="container"],
+.dark div[class*="wrapper"],
+.dark div[class*="content"] {
+  background-color: transparent !important;
+}
+
+/* Fix specific spacing elements that might show white */
+.dark .py-12 > div,
+.dark .max-width-container > div {
+  background-color: transparent !important;
+}
+
+/* Force dark background on root and prevent any white showing through */
+:root.dark {
+  background-color: #0f0f0f !important;
+}
+
+/* Comprehensive dark mode background for all potential gap-causing elements */
+.dark body *:not(.site-footer):not(.site-footer *) {
+  background-color: inherit;
+}
+
+/* Ensure margins don't create white gaps */
+.dark .py-12 {
+  background-color: #0f0f0f !important;
+  margin: 0 !important;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
 body.dark {
   background-color: #0f0f0f !important;
 }
@@ -3481,4 +3584,84 @@ html {
 
 @view-transition {
   navigation: auto;
+}
+
+/* ================================
+   MINIMAL SOCIAL SHARING ICONS
+   ================================ */
+.social-share-minimal {
+  margin: 2rem 0;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .social-share-minimal {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.share-icons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.share-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dark .share-icon {
+  color: #9ca3af !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.share-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.share-icon.twitter:hover {
+  background: #1da1f2;
+  border-color: #1da1f2;
+  color: white;
+}
+
+.share-icon.linkedin:hover {
+  background: #0077b5;
+  border-color: #0077b5;
+  color: white;
+}
+
+.share-icon.reddit:hover {
+  background: #ff4500;
+  border-color: #ff4500;
+  color: white;
+}
+
+.share-icon.copy:hover {
+  background: #1a8917;
+  border-color: #1a8917;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .share-icons {
+    gap: 0.75rem;
+  }
+
+  .share-icon {
+    width: 36px;
+    height: 36px;
+  }
 }

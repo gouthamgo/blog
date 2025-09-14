@@ -67,7 +67,7 @@ export function MobileMenu() {
             <Link href="/" className="mobile-menu-item" onClick={handleLinkClick}>
               HOME
             </Link>
-            <Link href="/blog" className="mobile-menu-item" onClick={handleLinkClick}>
+            <Link href="/" className="mobile-menu-item" onClick={handleLinkClick}>
               BLOG
             </Link>
             <Link href="/about" className="mobile-menu-item" onClick={handleLinkClick}>

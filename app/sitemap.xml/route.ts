@@ -25,12 +25,6 @@ export async function GET() {
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  <url>
-    <loc>${baseUrl}/blog</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
   ${posts
     .map(
       (post) => `
