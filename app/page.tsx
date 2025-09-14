@@ -7,10 +7,10 @@ export default function HomePage() {
   const posts = getAllPosts()
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <Header />
 
-      <div className="py-12">
+      <div className="py-12 bg-white dark:bg-gray-950">
         <LayoutWithSidebar>
           <div className="mb-16 text-center">
             <h1 className="medium-large-title mb-6">

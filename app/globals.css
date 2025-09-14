@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* EMERGENCY DARK MODE FIX - HIGHEST PRIORITY */
+html.dark {
+  background: #0f0f0f !important;
+  background-color: #0f0f0f !important;
+}
+
+html.dark,
+html.dark body,
+html.dark #__next,
+html.dark #root {
+  background: #0f0f0f !important;
+  background-color: #0f0f0f !important;
+  min-height: 100vh !important;
+}
+
 /* COMPREHENSIVE DARK MODE FIX - ROOT ELEMENTS */
 .dark,
 .dark html,
@@ -14,13 +29,11 @@ html.dark {
   background-color: #0f0f0f !important;
 }
 
-/* Aggressive targeting - all possible containers that could show white gaps */
+/* BRUTE FORCE DARK MODE FIX - TARGET EVERYTHING */
+.dark,
 .dark *,
 .dark *::before,
-.dark *::after {
-  background-color: inherit !important;
-}
-
+.dark *::after,
 .dark html,
 .dark body,
 .dark #__next,
@@ -32,8 +45,48 @@ html.dark {
 .dark div,
 .dark header,
 .dark footer,
-.dark aside {
+.dark aside,
+.dark .min-h-screen,
+.dark .container,
+.dark .wrapper,
+.dark .page-wrapper,
+.dark .content-wrapper,
+.dark .layout,
+.dark .main-content,
+.dark .max-width-container,
+.dark .py-12,
+.dark nav,
+.dark ul,
+.dark li,
+.dark span,
+.dark p {
   background-color: #0f0f0f !important;
+  color: inherit;
+}
+
+/* Force inheritance for all elements */
+.dark * {
+  background-color: inherit !important;
+}
+
+/* ULTIMATE BRUTE FORCE - NUCLEAR OPTION */
+html.dark,
+body.dark,
+.dark,
+.dark > *,
+.dark > * > *,
+.dark > * > * > *,
+.dark > * > * > * > * {
+  background-color: #0f0f0f !important;
+  background: #0f0f0f !important;
+}
+
+/* Override any remaining white backgrounds in dark mode */
+.dark [class*="bg-white"],
+.dark [style*="background-color: white"],
+.dark [style*="background: white"] {
+  background-color: #0f0f0f !important;
+  background: #0f0f0f !important;
 }
 
 /* Fix white gap between content and footer in dark mode */
