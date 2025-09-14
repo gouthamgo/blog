@@ -144,7 +144,7 @@ export default function PostPage({ params }: PostPageProps) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -153,7 +153,7 @@ export default function PostPage({ params }: PostPageProps) {
       <Header />
       <BackToTop />
 
-      <div className="py-12">
+      <div className="py-12 bg-white dark:bg-gray-950">
         <LayoutWithSidebar>
           <Breadcrumb items={breadcrumbItems} />
 

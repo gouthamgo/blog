@@ -63,12 +63,12 @@ export default function TopicPage({ params }: TopicPageProps) {
   )
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <Header />
       <BackToTop />
 
-      <div className="py-12">
-        <div className="max-width-container">
+      <div className="py-12 bg-white dark:bg-gray-950">
+        <div className="max-width-container bg-white dark:bg-gray-950">
           <LayoutWithSidebar>
             <div className="topic-page">
               <nav className="topic-breadcrumb">
