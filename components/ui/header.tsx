@@ -18,7 +18,7 @@ export function Header() {
             HOME
           </Link>
           <span className="nav-separator">•</span>
-          <Link href="/blog" className="nav-item">
+          <Link href="/" className="nav-item">
             BLOG
           </Link>
           <span className="nav-separator">•</span>

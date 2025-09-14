@@ -202,15 +202,15 @@ export default function PostPage({ params }: PostPageProps) {
               </div>
             )}
 
-            <div className="post-content">
-              <MDXRemote source={post.content} components={MDXComponents} />
-            </div>
-
             <SocialShare
               title={post.title}
               url={currentUrl}
               description={post.description}
             />
+
+            <div className="post-content">
+              <MDXRemote source={post.content} components={MDXComponents} />
+            </div>
 
             <AuthorBio
               name={post.author}
@@ -227,7 +227,8 @@ export default function PostPage({ params }: PostPageProps) {
 
             <PostNavigation previousPost={previousPost} nextPost={nextPost} />
 
-            <NewsletterSignup />
+            {/* Email signup - TODO: integrate with actual service */}
+            {/* <NewsletterSignup /> */}
           </article>
         </LayoutWithSidebar>
       </div>

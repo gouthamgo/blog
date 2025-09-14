@@ -33,8 +33,8 @@ export function RecommendedTopics() {
             </Link>
           ))}
         </div>
-        <Link href="/blog" className="see-more-topics">
-          See all topics
+        <Link href="/" className="see-more-topics">
+          See all posts
         </Link>
       </div>
     </section>

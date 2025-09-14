@@ -74,8 +74,6 @@ export default function TopicPage({ params }: TopicPageProps) {
               <nav className="topic-breadcrumb">
                 <Link href="/" className="breadcrumb-link">Home</Link>
                 <span className="breadcrumb-separator">›</span>
-                <Link href="/blog" className="breadcrumb-link">Blog</Link>
-                <span className="breadcrumb-separator">›</span>
                 <span className="breadcrumb-current">{topicName}</span>
               </nav>
 
@@ -84,7 +82,7 @@ export default function TopicPage({ params }: TopicPageProps) {
                 <p className="topic-description">
                   {filteredPosts.length} article{filteredPosts.length !== 1 ? 's' : ''} about {topicName.toLowerCase()}
                 </p>
-                <Link href="/blog" className="back-to-posts">← Back to all posts</Link>
+                <Link href="/" className="back-to-posts">← Back to all posts</Link>
               </div>
 
               {filteredPosts.length > 0 ? (
@@ -97,7 +95,7 @@ export default function TopicPage({ params }: TopicPageProps) {
                 <div className="no-posts">
                   <h2>No posts found</h2>
                   <p>We haven't published any articles about {topicName.toLowerCase()} yet. Check back soon!</p>
-                  <Link href="/blog" className="back-to-posts-btn">Browse all posts</Link>
+                  <Link href="/" className="back-to-posts-btn">Browse all posts</Link>
                 </div>
               )}
             </div>

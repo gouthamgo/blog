@@ -34,7 +34,7 @@ export function Footer() {
             <h4 className="footer-section-title">Navigation</h4>
             <nav className="footer-nav">
               <Link href="/" className="footer-link">Home</Link>
-              <Link href="/blog" className="footer-link">Blog</Link>
+              <Link href="/" className="footer-link">Blog</Link>
               <Link href="/about" className="footer-link">About</Link>
               <Link href="/contact" className="footer-link">Contact</Link>
             </nav>
