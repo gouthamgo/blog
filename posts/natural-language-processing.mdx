@@ -1,0 +1,1308 @@
+---
+title: "Natural Language Processing: Understanding Text with AI"
+description: "Master Natural Language Processing from basics to transformers. Learn text preprocessing, embeddings, sentiment analysis, and modern NLP with Hugging Face."
+date: "2024-11-12"
+author: "Tech Blogger"
+tags: ["NLP", "AI", "Text Processing", "Transformers"]
+image: "/images/nlp-transformers.jpg"
+readTime: "11 min read"
+---
+
+# Natural Language Processing: Understanding Text with AI
+
+Natural Language Processing (NLP) bridges the gap between human communication and computer understanding. From chatbots and translation services to sentiment analysis and content generation, NLP powers some of the most exciting applications in AI today.
+
+## What is Natural Language Processing?
+
+NLP combines computational linguistics, machine learning, and deep learning to help computers understand, interpret, and generate human language in a meaningful way.
+
+```python
+# Traditional approach vs NLP approach
+def traditional_text_processing(text):
+    """
+    Manual rule-based approach
+    - Count words, check patterns
+    - Limited understanding of context
+    - Breaks with new language patterns
+    """
+    if "good" in text.lower():
+        return "positive"
+    elif "bad" in text.lower():
+        return "negative"
+    return "neutral"
+
+def nlp_approach(text):
+    """
+    ML/AI approach
+    - Understands context and semantics
+    - Learns from data
+    - Handles nuance and complexity
+    """
+    # Uses trained models to understand meaning
+    # Considers word relationships, context, etc.
+    pass
+```
+
+## The NLP Pipeline
+
+Every NLP project follows a systematic pipeline:
+
+```
+📝 Raw Text → 🧹 Preprocessing → 🔤 Tokenization → 📊 Feature Extraction → 🤖 Model Processing → 📈 Output
+     ↓             ↓                ↓               ↓                      ↓               ↓
+  Documents    Cleaning &         Words/           Vectors/              AI Model      Classification/
+  Articles     Normalization      Tokens          Embeddings           Processing     Generation/etc.
+  Social Posts
+```
+
+Let's implement each step with practical examples:
+
+## 1. Text Preprocessing
+
+```python
+import re
+import nltk
+import spacy
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from collections import Counter
+import warnings
+warnings.filterwarnings('ignore')
+
+# Download required NLTK data
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
+
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tag import pos_tag
+
+# Load spaCy model (install with: python -m spacy download en_core_web_sm)
+# nlp = spacy.load("en_core_web_sm")
+
+def comprehensive_text_preprocessing(text):
+    """Complete text preprocessing pipeline"""
+
+    # 1. Convert to lowercase
+    text = text.lower()
+
+    # 2. Remove URLs, emails, mentions
+    text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'\S+@\S+', '', text)  # Remove emails
+    text = re.sub(r'@\w+', '', text)     # Remove mentions
+    text = re.sub(r'#\w+', '', text)     # Remove hashtags
+
+    # 3. Remove special characters and digits (optional)
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+
+    # 4. Remove extra whitespaces
+    text = ' '.join(text.split())
+
+    return text
+
+# Example preprocessing
+sample_texts = [
+    "I LOVE this product! 😍 It's absolutely amazing!!! https://example.com",
+    "This is terrible... I hate it 😠 @company please fix this #fail",
+    "Not sure about this one. It's okay, I guess? Could be better."
+]
+
+print("Original vs Preprocessed Text:")
+for i, text in enumerate(sample_texts):
+    processed = comprehensive_text_preprocessing(text)
+    print(f"\n{i+1}. Original:  '{text}'")
+    print(f"   Processed: '{processed}'")
+```
+
+## 2. Tokenization and Text Analysis
+
+```python
+def analyze_text_statistics(texts):
+    """Analyze basic text statistics"""
+
+    all_text = ' '.join(texts)
+
+    # Basic statistics
+    total_chars = len(all_text)
+    total_words = len(word_tokenize(all_text))
+    total_sentences = len(sent_tokenize(all_text))
+    unique_words = len(set(word_tokenize(all_text.lower())))
+
+    # Word frequency
+    words = word_tokenize(all_text.lower())
+    word_freq = Counter(words)
+
+    # Sentence lengths
+    sentences = sent_tokenize(all_text)
+    sentence_lengths = [len(word_tokenize(sent)) for sent in sentences]
+
+    print("📊 Text Statistics:")
+    print(f"Total characters: {total_chars:,}")
+    print(f"Total words: {total_words:,}")
+    print(f"Total sentences: {total_sentences:,}")
+    print(f"Unique words: {unique_words:,}")
+    print(f"Vocabulary richness: {unique_words/total_words:.3f}")
+    print(f"Average words per sentence: {np.mean(sentence_lengths):.1f}")
+
+    # Plot word frequency
+    plt.figure(figsize=(12, 8))
+
+    # Most common words
+    plt.subplot(2, 2, 1)
+    common_words = word_freq.most_common(10)
+    words, counts = zip(*common_words)
+    plt.barh(words, counts)
+    plt.title('Top 10 Most Common Words')
+    plt.xlabel('Frequency')
+
+    # Word length distribution
+    plt.subplot(2, 2, 2)
+    word_lengths = [len(word) for word in words if word.isalpha()]
+    plt.hist(word_lengths, bins=20, alpha=0.7)
+    plt.title('Word Length Distribution')
+    plt.xlabel('Word Length')
+    plt.ylabel('Frequency')
+
+    # Sentence length distribution
+    plt.subplot(2, 2, 3)
+    plt.hist(sentence_lengths, bins=15, alpha=0.7, color='green')
+    plt.title('Sentence Length Distribution')
+    plt.xlabel('Words per Sentence')
+    plt.ylabel('Frequency')
+
+    # Vocabulary growth curve
+    plt.subplot(2, 2, 4)
+    unique_words_cumulative = []
+    seen_words = set()
+    for word in words:
+        seen_words.add(word)
+        unique_words_cumulative.append(len(seen_words))
+
+    plt.plot(unique_words_cumulative[:1000])  # First 1000 words
+    plt.title('Vocabulary Growth Curve')
+    plt.xlabel('Words Processed')
+    plt.ylabel('Unique Words Discovered')
+
+    plt.tight_layout()
+    plt.show()
+
+    return word_freq
+
+# Load sample dataset for analysis
+def load_sample_data():
+    """Load or create sample text data"""
+
+    # Sample movie reviews for demonstration
+    movie_reviews = [
+        "This movie is absolutely fantastic! The acting is superb and the plot is engaging.",
+        "I didn't like this film at all. The story was confusing and the characters were poorly developed.",
+        "An okay movie. Not great, not terrible. Worth watching once.",
+        "Brilliant cinematography and outstanding performances. A masterpiece!",
+        "Boring and predictable. I fell asleep halfway through.",
+        "This film exceeded my expectations. Highly recommended!",
+        "The worst movie I've ever seen. Complete waste of time.",
+        "Decent entertainment. Good for a quiet evening at home.",
+        "Revolutionary filmmaking! This will change cinema forever.",
+        "Meh. It's an average film with average acting."
+    ]
+
+    return movie_reviews
+
+sample_data = load_sample_data()
+word_freq = analyze_text_statistics(sample_data)
+```
+
+## 3. Advanced Text Preprocessing
+
+```python
+def advanced_text_preprocessing(texts):
+    """Advanced preprocessing with NLTK"""
+
+    # Initialize tools
+    stemmer = PorterStemmer()
+    lemmatizer = WordNetLemmatizer()
+    stop_words = set(stopwords.words('english'))
+
+    processed_texts = []
+
+    for text in texts:
+        # Basic preprocessing
+        text = comprehensive_text_preprocessing(text)
+
+        # Tokenization
+        tokens = word_tokenize(text)
+
+        # Remove stopwords
+        tokens = [word for word in tokens if word.lower() not in stop_words]
+
+        # Remove short words
+        tokens = [word for word in tokens if len(word) > 2]
+
+        # Part-of-speech tagging (keep only nouns, adjectives, verbs)
+        pos_tags = pos_tag(tokens)
+        relevant_pos = ['NN', 'NNS', 'NNP', 'NNPS', 'JJ', 'JJR', 'JJS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
+        tokens = [word for word, pos in pos_tags if pos in relevant_pos]
+
+        # Lemmatization (better than stemming for most applications)
+        tokens = [lemmatizer.lemmatize(word) for word in tokens]
+
+        processed_texts.append(' '.join(tokens))
+
+    return processed_texts
+
+# Compare preprocessing approaches
+print("Preprocessing Comparison:")
+print("Original:")
+for i, text in enumerate(sample_data[:3]):
+    print(f"{i+1}. {text}")
+
+print("\nBasic preprocessing:")
+basic_processed = [comprehensive_text_preprocessing(text) for text in sample_data[:3]]
+for i, text in enumerate(basic_processed):
+    print(f"{i+1}. {text}")
+
+print("\nAdvanced preprocessing:")
+advanced_processed = advanced_text_preprocessing(sample_data[:3])
+for i, text in enumerate(advanced_processed):
+    print(f"{i+1}. {text}")
+```
+
+## 4. Feature Extraction: From Text to Numbers
+
+```python
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+from wordcloud import WordCloud
+
+def demonstrate_vectorization(texts):
+    """Show different text vectorization approaches"""
+
+    # 1. Bag of Words (Count Vectorizer)
+    count_vectorizer = CountVectorizer(max_features=20, stop_words='english')
+    count_matrix = count_vectorizer.fit_transform(texts)
+    count_feature_names = count_vectorizer.get_feature_names_out()
+
+    print("🔤 Bag of Words (Count Vectorizer)")
+    print("Feature names:", count_feature_names[:10])
+    print("Matrix shape:", count_matrix.shape)
+    print("Sample vector (first document):", count_matrix[0].toarray().flatten()[:10])
+
+    # 2. TF-IDF (Term Frequency-Inverse Document Frequency)
+    tfidf_vectorizer = TfidfVectorizer(max_features=20, stop_words='english')
+    tfidf_matrix = tfidf_vectorizer.fit_transform(texts)
+    tfidf_feature_names = tfidf_vectorizer.get_feature_names_out()
+
+    print("\n📊 TF-IDF Vectorizer")
+    print("Feature names:", tfidf_feature_names[:10])
+    print("Matrix shape:", tfidf_matrix.shape)
+    print("Sample vector (first document):", tfidf_matrix[0].toarray().flatten()[:10])
+
+    # Visualize feature importance
+    plt.figure(figsize=(15, 10))
+
+    # Count vectorizer visualization
+    plt.subplot(2, 3, 1)
+    count_sums = np.array(count_matrix.sum(axis=0)).flatten()
+    feature_count_pairs = list(zip(count_feature_names, count_sums))
+    feature_count_pairs.sort(key=lambda x: x[1], reverse=True)
+
+    features, counts = zip(*feature_count_pairs[:10])
+    plt.barh(features, counts)
+    plt.title('Top Features (Count Vectorizer)')
+    plt.xlabel('Total Count')
+
+    # TF-IDF visualization
+    plt.subplot(2, 3, 2)
+    tfidf_sums = np.array(tfidf_matrix.sum(axis=0)).flatten()
+    feature_tfidf_pairs = list(zip(tfidf_feature_names, tfidf_sums))
+    feature_tfidf_pairs.sort(key=lambda x: x[1], reverse=True)
+
+    features, scores = zip(*feature_tfidf_pairs[:10])
+    plt.barh(features, scores)
+    plt.title('Top Features (TF-IDF)')
+    plt.xlabel('Total TF-IDF Score')
+
+    # Word Cloud
+    plt.subplot(2, 3, 3)
+    all_text = ' '.join(texts)
+    wordcloud = WordCloud(width=300, height=200, background_color='white').generate(all_text)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.title('Word Cloud')
+
+    # Document similarity heatmap
+    plt.subplot(2, 3, 4)
+    from sklearn.metrics.pairwise import cosine_similarity
+    similarity_matrix = cosine_similarity(tfidf_matrix)
+    sns.heatmap(similarity_matrix, annot=True, cmap='Blues', fmt='.2f')
+    plt.title('Document Similarity (TF-IDF)')
+    plt.xlabel('Document Index')
+    plt.ylabel('Document Index')
+
+    # Feature distribution
+    plt.subplot(2, 3, 5)
+    doc_lengths = np.array(count_matrix.sum(axis=1)).flatten()
+    plt.hist(doc_lengths, bins=10, alpha=0.7)
+    plt.title('Document Length Distribution')
+    plt.xlabel('Total Word Count')
+    plt.ylabel('Number of Documents')
+
+    # TF-IDF score distribution
+    plt.subplot(2, 3, 6)
+    tfidf_scores = tfidf_matrix.data  # Non-zero TF-IDF scores
+    plt.hist(tfidf_scores, bins=20, alpha=0.7, color='orange')
+    plt.title('TF-IDF Score Distribution')
+    plt.xlabel('TF-IDF Score')
+    plt.ylabel('Frequency')
+
+    plt.tight_layout()
+    plt.show()
+
+    return count_vectorizer, tfidf_vectorizer, count_matrix, tfidf_matrix
+
+# Demonstrate vectorization
+count_vec, tfidf_vec, count_mat, tfidf_mat = demonstrate_vectorization(sample_data)
+```
+
+## 5. Word Embeddings: Understanding Semantic Meaning
+
+```python
+from gensim.models import Word2Vec
+from sklearn.manifold import TSNE
+import gensim.downloader as api
+
+def explore_word_embeddings():
+    """Explore different word embedding approaches"""
+
+    # 1. Train custom Word2Vec model
+    sentences = [text.split() for text in advanced_text_preprocessing(sample_data)]
+
+    # Train Word2Vec model
+    w2v_model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, workers=4, seed=42)
+
+    print("🧠 Custom Word2Vec Model")
+    print(f"Vocabulary size: {len(w2v_model.wv.key_to_index)}")
+
+    # Find similar words
+    if 'movie' in w2v_model.wv.key_to_index:
+        similar_words = w2v_model.wv.most_similar('movie', topn=5)
+        print(f"Words similar to 'movie': {similar_words}")
+
+    # 2. Load pre-trained embeddings
+    print("\n🌐 Pre-trained Word2Vec Embeddings")
+    try:
+        # Load pre-trained model (this might take a while on first run)
+        pretrained_model = api.load('word2vec-google-news-300')
+
+        # Explore word relationships
+        print("Words similar to 'excellent':")
+        similar_excellent = pretrained_model.most_similar('excellent', topn=5)
+        for word, score in similar_excellent:
+            print(f"  {word}: {score:.3f}")
+
+        # Word analogies: king - man + woman = queen
+        try:
+            analogy_result = pretrained_model.most_similar(
+                positive=['king', 'woman'],
+                negative=['man'],
+                topn=1
+            )
+            print(f"\nWord analogy (king - man + woman): {analogy_result[0][0]}")
+        except KeyError:
+            print("Could not complete word analogy (words not in vocabulary)")
+
+    except Exception as e:
+        print(f"Could not load pre-trained embeddings: {e}")
+        pretrained_model = None
+
+    return w2v_model, pretrained_model
+
+def visualize_embeddings(model, words_to_plot=None):
+    """Visualize word embeddings using t-SNE"""
+
+    if words_to_plot is None:
+        # Use most common words from our vocabulary
+        words_to_plot = list(model.wv.key_to_index.keys())[:20]
+
+    # Get word vectors
+    word_vectors = []
+    valid_words = []
+
+    for word in words_to_plot:
+        if word in model.wv.key_to_index:
+            word_vectors.append(model.wv[word])
+            valid_words.append(word)
+
+    if len(word_vectors) < 2:
+        print("Not enough words for visualization")
+        return
+
+    # Apply t-SNE for dimensionality reduction
+    word_vectors = np.array(word_vectors)
+    tsne = TSNE(n_components=2, random_state=42, perplexity=min(5, len(word_vectors)-1))
+    word_vectors_2d = tsne.fit_transform(word_vectors)
+
+    # Plot
+    plt.figure(figsize=(12, 8))
+    plt.scatter(word_vectors_2d[:, 0], word_vectors_2d[:, 1], alpha=0.7)
+
+    for i, word in enumerate(valid_words):
+        plt.annotate(word, (word_vectors_2d[i, 0], word_vectors_2d[i, 1]),
+                    xytext=(5, 5), textcoords='offset points', fontsize=10)
+
+    plt.title('Word Embeddings Visualization (t-SNE)')
+    plt.xlabel('t-SNE dimension 1')
+    plt.ylabel('t-SNE dimension 2')
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+# Explore embeddings
+w2v_model, pretrained_model = explore_word_embeddings()
+visualize_embeddings(w2v_model)
+```
+
+## 6. Sentiment Analysis: Practical NLP Application
+
+```python
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix
+from textblob import TextBlob
+
+def create_sentiment_labels(texts):
+    """Create sentiment labels using TextBlob as baseline"""
+
+    labels = []
+    for text in texts:
+        blob = TextBlob(text)
+        polarity = blob.sentiment.polarity
+
+        if polarity > 0.1:
+            labels.append('positive')
+        elif polarity < -0.1:
+            labels.append('negative')
+        else:
+            labels.append('neutral')
+
+    return labels
+
+def build_sentiment_classifier(texts, labels):
+    """Build and evaluate sentiment classification models"""
+
+    # Prepare features
+    tfidf_vectorizer = TfidfVectorizer(max_features=1000, stop_words='english', ngram_range=(1, 2))
+    X = tfidf_vectorizer.fit_transform(texts)
+    y = np.array(labels)
+
+    # Split data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
+
+    # Train multiple models
+    models = {
+        'Naive Bayes': MultinomialNB(),
+        'Logistic Regression': LogisticRegression(random_state=42, max_iter=1000),
+        'SVM': SVC(kernel='linear', random_state=42)
+    }
+
+    results = {}
+
+    print("🎭 Sentiment Analysis Model Comparison")
+    print("=" * 50)
+
+    for name, model in models.items():
+        # Train model
+        model.fit(X_train, y_train)
+
+        # Make predictions
+        y_pred = model.predict(X_test)
+
+        # Evaluate
+        accuracy = (y_pred == y_test).mean()
+        results[name] = {
+            'model': model,
+            'accuracy': accuracy,
+            'predictions': y_pred
+        }
+
+        print(f"\n{name} Results:")
+        print(f"Accuracy: {accuracy:.3f}")
+        print("\nClassification Report:")
+        print(classification_report(y_test, y_pred))
+
+    # Visualize results
+    plt.figure(figsize=(15, 10))
+
+    # Model accuracy comparison
+    plt.subplot(2, 3, 1)
+    model_names = list(results.keys())
+    accuracies = [results[name]['accuracy'] for name in model_names]
+    plt.bar(model_names, accuracies)
+    plt.title('Model Accuracy Comparison')
+    plt.ylabel('Accuracy')
+    plt.xticks(rotation=45)
+
+    # Confusion matrix for best model
+    best_model_name = max(results.keys(), key=lambda x: results[x]['accuracy'])
+    best_predictions = results[best_model_name]['predictions']
+
+    plt.subplot(2, 3, 2)
+    cm = confusion_matrix(y_test, best_predictions)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                xticklabels=np.unique(y), yticklabels=np.unique(y))
+    plt.title(f'Confusion Matrix ({best_model_name})')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+
+    # Feature importance (for Logistic Regression)
+    if 'Logistic Regression' in results:
+        plt.subplot(2, 3, 3)
+        lr_model = results['Logistic Regression']['model']
+        feature_names = tfidf_vectorizer.get_feature_names_out()
+
+        if hasattr(lr_model, 'coef_') and len(lr_model.classes_) <= 3:
+            # For multi-class, show features for first class
+            if lr_model.coef_.shape[0] == 1:
+                coefficients = lr_model.coef_[0]
+            else:
+                coefficients = lr_model.coef_[0]  # First class
+
+            # Get top positive and negative features
+            top_positive_idx = np.argsort(coefficients)[-10:]
+            top_negative_idx = np.argsort(coefficients)[:10]
+
+            top_features = []
+            top_coefs = []
+
+            for idx in top_negative_idx:
+                top_features.append(feature_names[idx])
+                top_coefs.append(coefficients[idx])
+
+            for idx in top_positive_idx:
+                top_features.append(feature_names[idx])
+                top_coefs.append(coefficients[idx])
+
+            colors = ['red' if coef < 0 else 'green' for coef in top_coefs]
+            plt.barh(range(len(top_features)), top_coefs, color=colors, alpha=0.7)
+            plt.yticks(range(len(top_features)), top_features)
+            plt.title('Feature Importance (Logistic Regression)')
+            plt.xlabel('Coefficient Value')
+
+    # Sentiment distribution
+    plt.subplot(2, 3, 4)
+    sentiment_counts = pd.Series(labels).value_counts()
+    plt.pie(sentiment_counts.values, labels=sentiment_counts.index, autopct='%1.1f%%')
+    plt.title('Sentiment Distribution')
+
+    # Prediction confidence (for models that support it)
+    if hasattr(results['Logistic Regression']['model'], 'predict_proba'):
+        plt.subplot(2, 3, 5)
+        probabilities = results['Logistic Regression']['model'].predict_proba(X_test)
+        max_probs = np.max(probabilities, axis=1)
+        plt.hist(max_probs, bins=20, alpha=0.7)
+        plt.title('Prediction Confidence Distribution')
+        plt.xlabel('Max Probability')
+        plt.ylabel('Frequency')
+
+    plt.tight_layout()
+    plt.show()
+
+    return tfidf_vectorizer, results
+
+# Create expanded dataset for better sentiment analysis
+expanded_reviews = [
+    "This movie is absolutely fantastic! Amazing acting and beautiful cinematography.",
+    "Terrible film. Waste of time and money. Completely disappointed.",
+    "An okay movie. Nothing special but watchable on a quiet evening.",
+    "Brilliant masterpiece! One of the best films I've ever seen.",
+    "Boring and predictable. I fell asleep halfway through the movie.",
+    "Excellent story and outstanding performances. Highly recommended!",
+    "The worst movie ever made. Awful acting and terrible plot.",
+    "Decent entertainment. Good for kids but adults might find it boring.",
+    "Revolutionary filmmaking! This will change cinema history forever.",
+    "Average film with mediocre acting. Could have been much better.",
+    "Absolutely loved it! Perfect blend of action and emotion.",
+    "Disappointing sequel. The original was much better than this one.",
+    "Great movie for the whole family. Fun and entertaining throughout.",
+    "Confusing plot and poor character development. Very disappointed.",
+    "Stunning visuals and incredible soundtrack. A true work of art."
+]
+
+# Create sentiment labels
+sentiment_labels = create_sentiment_labels(expanded_reviews)
+print("Sentiment Labels:", Counter(sentiment_labels))
+
+# Build sentiment classifier
+vectorizer, model_results = build_sentiment_classifier(expanded_reviews, sentiment_labels)
+```
+
+## 7. Modern NLP with Transformers and Hugging Face
+
+```python
+# Install required libraries first:
+# pip install transformers torch datasets
+
+from transformers import pipeline, AutoTokenizer, AutoModel
+import torch
+
+def modern_nlp_with_transformers():
+    """Explore modern NLP with pre-trained transformers"""
+
+    print("🤗 Modern NLP with Transformers")
+    print("=" * 40)
+
+    # 1. Sentiment Analysis Pipeline
+    print("\n1. Sentiment Analysis with BERT")
+    sentiment_pipeline = pipeline("sentiment-analysis")
+
+    test_sentences = [
+        "I love this product! It's amazing!",
+        "This is terrible. I hate it.",
+        "It's okay, nothing special."
+    ]
+
+    for sentence in test_sentences:
+        result = sentiment_pipeline(sentence)
+        print(f"'{sentence}' → {result[0]['label']}: {result[0]['score']:.3f}")
+
+    # 2. Named Entity Recognition
+    print("\n2. Named Entity Recognition")
+    ner_pipeline = pipeline("ner", aggregation_strategy="simple")
+
+    text = "Apple Inc. was founded by Steve Jobs in Cupertino, California."
+    entities = ner_pipeline(text)
+
+    print(f"Text: '{text}'")
+    print("Entities found:")
+    for entity in entities:
+        print(f"  {entity['word']}: {entity['entity_group']} (confidence: {entity['score']:.3f})")
+
+    # 3. Text Generation
+    print("\n3. Text Generation")
+    generator = pipeline("text-generation", model="gpt2")
+
+    prompt = "The future of artificial intelligence is"
+    generated = generator(prompt, max_length=50, num_return_sequences=1)
+
+    print(f"Prompt: '{prompt}'")
+    print(f"Generated: '{generated[0]['generated_text']}'")
+
+    # 4. Question Answering
+    print("\n4. Question Answering")
+    qa_pipeline = pipeline("question-answering")
+
+    context = """
+    Natural Language Processing (NLP) is a field of artificial intelligence
+    that focuses on the interaction between computers and human language.
+    It combines computational linguistics with machine learning and deep learning
+    to help computers understand, interpret, and generate human language.
+    """
+
+    questions = [
+        "What is NLP?",
+        "What does NLP combine?"
+    ]
+
+    for question in questions:
+        answer = qa_pipeline(question=question, context=context)
+        print(f"Q: {question}")
+        print(f"A: {answer['answer']} (confidence: {answer['score']:.3f})")
+
+    # 5. Text Summarization
+    print("\n5. Text Summarization")
+    summarizer = pipeline("summarization")
+
+    long_text = """
+    Natural language processing (NLP) is a subfield of linguistics, computer science,
+    and artificial intelligence concerned with the interactions between computers and human language,
+    in particular how to program computers to process and analyze large amounts of natural language data.
+    The goal is a computer capable of understanding the contents of documents, including the contextual
+    nuances of the language within them. The technology can then accurately extract information and
+    insights contained in the documents as well as categorize and organize the documents themselves.
+    Challenges in natural language processing frequently involve speech recognition, natural language
+    understanding, and natural language generation.
+    """
+
+    summary = summarizer(long_text, max_length=50, min_length=25, do_sample=False)
+    print(f"Original length: {len(long_text.split())} words")
+    print(f"Summary: '{summary[0]['summary_text']}'")
+    print(f"Summary length: {len(summary[0]['summary_text'].split())} words")
+
+# Run modern NLP examples
+try:
+    modern_nlp_with_transformers()
+except Exception as e:
+    print(f"Modern NLP examples require additional libraries: {e}")
+    print("Install with: pip install transformers torch")
+```
+
+## 8. Building a Custom NLP Application
+
+```python
+class TextAnalyzer:
+    """Complete text analysis application"""
+
+    def __init__(self):
+        self.sentiment_model = None
+        self.tfidf_vectorizer = None
+        self.word_freq = None
+
+    def fit(self, texts, labels=None):
+        """Train the text analyzer"""
+
+        # Text preprocessing
+        self.processed_texts = advanced_text_preprocessing(texts)
+
+        # Vectorization
+        self.tfidf_vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
+        X = self.tfidf_vectorizer.fit_transform(self.processed_texts)
+
+        # Word frequency analysis
+        all_text = ' '.join(self.processed_texts)
+        self.word_freq = Counter(word_tokenize(all_text.lower()))
+
+        # Train sentiment model if labels provided
+        if labels is not None:
+            self.sentiment_model = LogisticRegression(random_state=42)
+            self.sentiment_model.fit(X, labels)
+
+        print("✅ TextAnalyzer trained successfully!")
+
+    def analyze_text(self, text):
+        """Analyze a single text sample"""
+
+        # Preprocess
+        processed = advanced_text_preprocessing([text])[0]
+
+        # Basic statistics
+        word_count = len(word_tokenize(text))
+        char_count = len(text)
+        sentence_count = len(sent_tokenize(text))
+
+        # Sentiment analysis
+        sentiment_score = None
+        if self.sentiment_model:
+            text_vector = self.tfidf_vectorizer.transform([processed])
+            sentiment_proba = self.sentiment_model.predict_proba(text_vector)[0]
+            sentiment_classes = self.sentiment_model.classes_
+            sentiment_score = {
+                class_name: prob for class_name, prob in zip(sentiment_classes, sentiment_proba)
+            }
+
+        # Key phrases extraction (top TF-IDF terms)
+        if self.tfidf_vectorizer:
+            text_vector = self.tfidf_vectorizer.transform([processed])
+            feature_names = self.tfidf_vectorizer.get_feature_names_out()
+            tfidf_scores = text_vector.toarray()[0]
+
+            # Get top terms
+            top_indices = np.argsort(tfidf_scores)[-5:][::-1]
+            key_phrases = [
+                (feature_names[i], tfidf_scores[i])
+                for i in top_indices if tfidf_scores[i] > 0
+            ]
+        else:
+            key_phrases = []
+
+        # Readability (simple measure)
+        avg_words_per_sentence = word_count / max(sentence_count, 1)
+        words = word_tokenize(processed)
+        avg_chars_per_word = sum(len(word) for word in words) / max(len(words), 1)
+
+        return {
+            'text_length': {
+                'characters': char_count,
+                'words': word_count,
+                'sentences': sentence_count
+            },
+            'readability': {
+                'avg_words_per_sentence': round(avg_words_per_sentence, 1),
+                'avg_chars_per_word': round(avg_chars_per_word, 1)
+            },
+            'sentiment': sentiment_score,
+            'key_phrases': key_phrases,
+            'processed_text': processed
+        }
+
+    def generate_report(self, text):
+        """Generate comprehensive analysis report"""
+
+        analysis = self.analyze_text(text)
+
+        print("📊 Text Analysis Report")
+        print("=" * 50)
+        print(f"Original Text: '{text[:100]}{'...' if len(text) > 100 else ''}'")
+        print(f"Processed Text: '{analysis['processed_text'][:100]}{'...' if len(analysis['processed_text']) > 100 else ''}'")
+
+        print(f"\n📏 Text Statistics:")
+        print(f"  Characters: {analysis['text_length']['characters']}")
+        print(f"  Words: {analysis['text_length']['words']}")
+        print(f"  Sentences: {analysis['text_length']['sentences']}")
+
+        print(f"\n📚 Readability:")
+        print(f"  Average words per sentence: {analysis['readability']['avg_words_per_sentence']}")
+        print(f"  Average characters per word: {analysis['readability']['avg_chars_per_word']}")
+
+        if analysis['sentiment']:
+            print(f"\n😊 Sentiment Analysis:")
+            for sentiment, score in analysis['sentiment'].items():
+                print(f"  {sentiment}: {score:.3f}")
+
+        if analysis['key_phrases']:
+            print(f"\n🔑 Key Phrases:")
+            for phrase, score in analysis['key_phrases']:
+                print(f"  '{phrase}': {score:.3f}")
+
+        return analysis
+
+# Create and use the text analyzer
+analyzer = TextAnalyzer()
+analyzer.fit(expanded_reviews, sentiment_labels)
+
+# Test the analyzer
+test_text = """
+This movie represents a groundbreaking achievement in modern cinema.
+The director's vision is perfectly executed through stunning cinematography
+and exceptional performances from the entire cast. While the plot might seem
+complex at first, it unfolds beautifully throughout the film's runtime.
+I would highly recommend this masterpiece to anyone who appreciates
+thoughtful and artistic filmmaking.
+"""
+
+report = analyzer.generate_report(test_text)
+```
+
+## 9. Advanced NLP Techniques
+
+```python
+def topic_modeling_with_lda(texts, n_topics=3):
+    """Perform topic modeling using Latent Dirichlet Allocation"""
+
+    # Prepare texts
+    processed_texts = advanced_text_preprocessing(texts)
+
+    # Create document-term matrix
+    vectorizer = CountVectorizer(max_features=100, stop_words='english', min_df=2)
+    doc_term_matrix = vectorizer.fit_transform(processed_texts)
+
+    # Fit LDA model
+    lda_model = LatentDirichletAllocation(n_components=n_topics, random_state=42)
+    lda_model.fit(doc_term_matrix)
+
+    # Get feature names
+    feature_names = vectorizer.get_feature_names_out()
+
+    # Display topics
+    print(f"🎯 Topic Modeling Results ({n_topics} topics)")
+    print("=" * 40)
+
+    for topic_idx, topic in enumerate(lda_model.components_):
+        top_words_idx = topic.argsort()[-10:][::-1]  # Top 10 words
+        top_words = [feature_names[i] for i in top_words_idx]
+        print(f"\nTopic {topic_idx + 1}: {', '.join(top_words[:5])}")
+        print(f"All words: {', '.join(top_words)}")
+
+    # Visualize topic distribution
+    plt.figure(figsize=(12, 6))
+
+    # Topic-word distribution
+    plt.subplot(1, 2, 1)
+    topic_word_matrix = lda_model.components_
+    sns.heatmap(topic_word_matrix[:, :20], xticklabels=feature_names[:20],
+                yticklabels=[f'Topic {i+1}' for i in range(n_topics)],
+                cmap='Blues')
+    plt.title('Topic-Word Distribution')
+    plt.xlabel('Words')
+    plt.ylabel('Topics')
+
+    # Document-topic distribution
+    plt.subplot(1, 2, 2)
+    doc_topic_matrix = lda_model.transform(doc_term_matrix)
+    plt.imshow(doc_topic_matrix.T, cmap='Blues', aspect='auto')
+    plt.title('Document-Topic Distribution')
+    plt.xlabel('Documents')
+    plt.ylabel('Topics')
+    plt.yticks(range(n_topics), [f'Topic {i+1}' for i in range(n_topics)])
+
+    plt.tight_layout()
+    plt.show()
+
+    return lda_model, vectorizer, doc_topic_matrix
+
+# Perform topic modeling
+lda_model, lda_vectorizer, doc_topics = topic_modeling_with_lda(expanded_reviews)
+
+def text_similarity_analysis(texts):
+    """Analyze text similarity using different approaches"""
+
+    # TF-IDF similarity
+    tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf_vectorizer.fit_transform(texts)
+
+    from sklearn.metrics.pairwise import cosine_similarity
+    similarity_matrix = cosine_similarity(tfidf_matrix)
+
+    # Visualize similarity matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(similarity_matrix, annot=True, cmap='Blues', fmt='.2f')
+    plt.title('Document Similarity Matrix (TF-IDF + Cosine Similarity)')
+    plt.xlabel('Document Index')
+    plt.ylabel('Document Index')
+    plt.show()
+
+    # Find most similar document pairs
+    print("🔍 Most Similar Document Pairs:")
+    n_docs = len(texts)
+    similarities = []
+
+    for i in range(n_docs):
+        for j in range(i+1, n_docs):
+            sim_score = similarity_matrix[i][j]
+            similarities.append((i, j, sim_score))
+
+    # Sort by similarity score
+    similarities.sort(key=lambda x: x[2], reverse=True)
+
+    # Show top 3 most similar pairs
+    for i, (doc1_idx, doc2_idx, score) in enumerate(similarities[:3]):
+        print(f"\nPair {i+1} (Similarity: {score:.3f}):")
+        print(f"Document {doc1_idx}: '{texts[doc1_idx][:80]}...'")
+        print(f"Document {doc2_idx}: '{texts[doc2_idx][:80]}...'")
+
+# Analyze text similarity
+text_similarity_analysis(expanded_reviews)
+```
+
+## 10. Production NLP Pipeline
+
+```python
+class ProductionNLPPipeline:
+    """Production-ready NLP pipeline"""
+
+    def __init__(self):
+        self.models = {}
+        self.vectorizers = {}
+        self.is_trained = False
+
+    def preprocess_pipeline(self, texts):
+        """Complete preprocessing pipeline"""
+
+        processed = []
+        for text in texts:
+            # Basic cleaning
+            clean_text = comprehensive_text_preprocessing(text)
+
+            # Advanced processing
+            advanced_clean = advanced_text_preprocessing([clean_text])[0]
+            processed.append(advanced_clean)
+
+        return processed
+
+    def train_pipeline(self, texts, labels=None, tasks=['sentiment', 'similarity', 'topics']):
+        """Train multiple NLP models"""
+
+        print("🚀 Training Production NLP Pipeline...")
+
+        # Preprocess texts
+        processed_texts = self.preprocess_pipeline(texts)
+
+        # Vectorization
+        self.vectorizers['tfidf'] = TfidfVectorizer(max_features=1000, stop_words='english')
+        tfidf_features = self.vectorizers['tfidf'].fit_transform(processed_texts)
+
+        # Train models based on requested tasks
+        if 'sentiment' in tasks and labels is not None:
+            self.models['sentiment'] = LogisticRegression(random_state=42)
+            self.models['sentiment'].fit(tfidf_features, labels)
+            print("✅ Sentiment analysis model trained")
+
+        if 'topics' in tasks:
+            self.models['topic'] = LatentDirichletAllocation(n_components=3, random_state=42)
+            count_vectorizer = CountVectorizer(max_features=100, stop_words='english')
+            count_features = count_vectorizer.fit_transform(processed_texts)
+            self.models['topic'].fit(count_features)
+            self.vectorizers['count'] = count_vectorizer
+            print("✅ Topic modeling trained")
+
+        if 'similarity' in tasks:
+            # Store similarity matrix for reference documents
+            from sklearn.metrics.pairwise import cosine_similarity
+            self.reference_texts = processed_texts
+            self.similarity_matrix = cosine_similarity(tfidf_features)
+            print("✅ Similarity analysis prepared")
+
+        self.is_trained = True
+        print("🎉 Pipeline training completed!")
+
+    def analyze_new_text(self, text):
+        """Analyze new text using trained models"""
+
+        if not self.is_trained:
+            raise ValueError("Pipeline must be trained first!")
+
+        # Preprocess
+        processed = self.preprocess_pipeline([text])[0]
+
+        results = {
+            'original_text': text,
+            'processed_text': processed,
+            'analysis': {}
+        }
+
+        # TF-IDF features
+        tfidf_features = self.vectorizers['tfidf'].transform([processed])
+
+        # Sentiment analysis
+        if 'sentiment' in self.models:
+            sentiment_proba = self.models['sentiment'].predict_proba(tfidf_features)[0]
+            sentiment_classes = self.models['sentiment'].classes_
+            results['analysis']['sentiment'] = {
+                class_name: float(prob)
+                for class_name, prob in zip(sentiment_classes, sentiment_proba)
+            }
+
+        # Topic analysis
+        if 'topic' in self.models:
+            count_features = self.vectorizers['count'].transform([processed])
+            topic_proba = self.models['topic'].transform(count_features)[0]
+            results['analysis']['topics'] = {
+                f'topic_{i}': float(prob)
+                for i, prob in enumerate(topic_proba)
+            }
+
+        # Similarity to reference texts
+        if hasattr(self, 'reference_texts'):
+            from sklearn.metrics.pairwise import cosine_similarity
+            similarity_scores = cosine_similarity(tfidf_features,
+                                               self.vectorizers['tfidf'].transform(self.reference_texts))[0]
+            most_similar_idx = np.argmax(similarity_scores)
+            results['analysis']['most_similar'] = {
+                'text_index': int(most_similar_idx),
+                'similarity_score': float(similarity_scores[most_similar_idx]),
+                'similar_text': self.reference_texts[most_similar_idx][:100] + '...'
+            }
+
+        return results
+
+    def batch_analyze(self, texts):
+        """Analyze multiple texts efficiently"""
+
+        results = []
+        for text in texts:
+            result = self.analyze_new_text(text)
+            results.append(result)
+
+        return results
+
+    def save_pipeline(self, filepath):
+        """Save trained pipeline"""
+        import joblib
+
+        pipeline_data = {
+            'models': self.models,
+            'vectorizers': self.vectorizers,
+            'reference_texts': getattr(self, 'reference_texts', None),
+            'is_trained': self.is_trained
+        }
+
+        joblib.dump(pipeline_data, filepath)
+        print(f"💾 Pipeline saved to {filepath}")
+
+    def load_pipeline(self, filepath):
+        """Load trained pipeline"""
+        import joblib
+
+        pipeline_data = joblib.load(filepath)
+
+        self.models = pipeline_data['models']
+        self.vectorizers = pipeline_data['vectorizers']
+        self.reference_texts = pipeline_data.get('reference_texts')
+        self.is_trained = pipeline_data['is_trained']
+
+        print(f"📂 Pipeline loaded from {filepath}")
+
+# Create and train production pipeline
+production_pipeline = ProductionNLPPipeline()
+production_pipeline.train_pipeline(expanded_reviews, sentiment_labels)
+
+# Test with new texts
+test_texts = [
+    "This is an amazing product that exceeded all my expectations!",
+    "Terrible quality and poor customer service. Very disappointed.",
+    "The movie was okay, nothing spectacular but decent entertainment."
+]
+
+print("\n🧪 Testing Production Pipeline:")
+print("=" * 50)
+
+for i, text in enumerate(test_texts):
+    print(f"\nTest {i+1}: '{text}'")
+    result = production_pipeline.analyze_new_text(text)
+
+    if 'sentiment' in result['analysis']:
+        sentiment = result['analysis']['sentiment']
+        best_sentiment = max(sentiment.keys(), key=lambda x: sentiment[x])
+        print(f"Sentiment: {best_sentiment} ({sentiment[best_sentiment]:.3f})")
+
+    if 'most_similar' in result['analysis']:
+        similarity_info = result['analysis']['most_similar']
+        print(f"Most similar to: '{similarity_info['similar_text']}'")
+        print(f"Similarity score: {similarity_info['similarity_score']:.3f}")
+
+# Save pipeline for later use
+try:
+    production_pipeline.save_pipeline('nlp_pipeline.pkl')
+except Exception as e:
+    print(f"Could not save pipeline: {e}")
+```
+
+## Key NLP Libraries and Tools
+
+### Essential Libraries
+```python
+# Core NLP libraries overview
+nlp_libraries = {
+    'NLTK': {
+        'purpose': 'Traditional NLP toolkit',
+        'strengths': ['Comprehensive', 'Educational', 'Well-documented'],
+        'use_cases': ['Text preprocessing', 'Basic NLP tasks', 'Learning']
+    },
+    'spaCy': {
+        'purpose': 'Industrial-strength NLP',
+        'strengths': ['Fast', 'Production-ready', 'Easy to use'],
+        'use_cases': ['Named Entity Recognition', 'POS tagging', 'Dependency parsing']
+    },
+    'Transformers (Hugging Face)': {
+        'purpose': 'State-of-the-art pretrained models',
+        'strengths': ['Latest models', 'Easy integration', 'Great performance'],
+        'use_cases': ['Sentiment analysis', 'Text generation', 'Question answering']
+    },
+    'Gensim': {
+        'purpose': 'Topic modeling and document similarity',
+        'strengths': ['Efficient', 'Scalable', 'Word embeddings'],
+        'use_cases': ['Word2Vec', 'Doc2Vec', 'LDA topic modeling']
+    },
+    'TextBlob': {
+        'purpose': 'Simple text processing',
+        'strengths': ['Easy API', 'Quick prototyping', 'Sentiment analysis'],
+        'use_cases': ['Beginner projects', 'Quick analysis', 'Simple tasks']
+    }
+}
+
+for lib, info in nlp_libraries.items():
+    print(f"\n{lib}:")
+    print(f"  Purpose: {info['purpose']}")
+    print(f"  Strengths: {', '.join(info['strengths'])}")
+    print(f"  Use cases: {', '.join(info['use_cases'])}")
+```
+
+## Best Practices and Common Pitfalls
+
+### 1. **Data Quality Issues**
+```python
+# Common data quality problems and solutions
+def data_quality_checklist(texts):
+    """Check common data quality issues"""
+
+    issues = []
+
+    # Check for empty texts
+    empty_texts = sum(1 for text in texts if not text.strip())
+    if empty_texts > 0:
+        issues.append(f"Found {empty_texts} empty texts")
+
+    # Check for very short texts
+    short_texts = sum(1 for text in texts if len(text.split()) < 3)
+    if short_texts > len(texts) * 0.1:  # More than 10%
+        issues.append(f"Found {short_texts} very short texts (< 3 words)")
+
+    # Check for duplicate texts
+    unique_texts = len(set(texts))
+    if unique_texts < len(texts):
+        issues.append(f"Found {len(texts) - unique_texts} duplicate texts")
+
+    # Check language consistency (basic)
+    non_ascii_texts = sum(1 for text in texts if not text.isascii())
+    if non_ascii_texts > 0:
+        issues.append(f"Found {non_ascii_texts} texts with non-ASCII characters")
+
+    return issues
+
+# Check data quality
+quality_issues = data_quality_checklist(expanded_reviews)
+if quality_issues:
+    print("⚠️ Data Quality Issues:")
+    for issue in quality_issues:
+        print(f"  - {issue}")
+else:
+    print("✅ No major data quality issues found")
+```
+
+### 2. **Model Selection Guidelines**
+```python
+model_selection_guide = {
+    'Small Dataset (< 1000 samples)': {
+        'recommended': ['Naive Bayes', 'Logistic Regression', 'SVM'],
+        'avoid': ['Deep Learning', 'Transformers'],
+        'reason': 'Simple models work better with limited data'
+    },
+    'Medium Dataset (1000-10000 samples)': {
+        'recommended': ['Random Forest', 'Gradient Boosting', 'Simple Neural Networks'],
+        'consider': ['Pre-trained embeddings + Classical ML'],
+        'reason': 'Balance between complexity and available data'
+    },
+    'Large Dataset (> 10000 samples)': {
+        'recommended': ['Deep Learning', 'Transformers', 'Ensemble methods'],
+        'consider': ['Custom architectures', 'Fine-tuning pre-trained models'],
+        'reason': 'Enough data to train complex models effectively'
+    }
+}
+
+print("📋 Model Selection Guidelines:")
+for dataset_size, recommendations in model_selection_guide.items():
+    print(f"\n{dataset_size}:")
+    for key, value in recommendations.items():
+        if isinstance(value, list):
+            print(f"  {key.title()}: {', '.join(value)}")
+        else:
+            print(f"  Reason: {value}")
+```
+
+## Conclusion
+
+Natural Language Processing is a vast and rapidly evolving field that combines linguistics, computer science, and artificial intelligence. The key concepts we've covered include:
+
+### 🎯 **Core Concepts**
+- **Text Preprocessing**: Cleaning, tokenization, normalization
+- **Feature Extraction**: Bag-of-words, TF-IDF, word embeddings
+- **Classical ML**: Naive Bayes, SVM, Logistic Regression for text
+- **Deep Learning**: RNNs, CNNs, Transformers for NLP
+
+### 🛠️ **Practical Skills**
+- **Pipeline Development**: End-to-end NLP workflows
+- **Model Evaluation**: Proper validation and metrics for NLP
+- **Production Deployment**: Scalable NLP systems
+- **Modern Tools**: Hugging Face Transformers, spaCy, NLTK
+
+### 🚀 **Advanced Applications**
+- **Sentiment Analysis**: Understanding opinion and emotion in text
+- **Topic Modeling**: Discovering themes in document collections
+- **Text Generation**: Creating human-like text with AI
+- **Question Answering**: Building intelligent Q&A systems
+
+### 💡 **Best Practices**
+1. **Start with Data**: Clean, high-quality data is crucial
+2. **Begin Simple**: Try classical methods before deep learning
+3. **Leverage Pre-trained Models**: Use transformers for complex tasks
+4. **Validate Properly**: Use appropriate metrics and test sets
+5. **Consider Context**: Domain-specific knowledge matters
+
+The field of NLP is advancing rapidly with transformer architectures, but the fundamentals remain important. Understanding both classical and modern approaches gives you the flexibility to choose the right tool for each problem.
+
+Whether you're building chatbots, analyzing customer feedback, or creating content generation systems, these NLP fundamentals will serve as your foundation for more advanced applications. Keep experimenting, stay curious, and remember that language is beautifully complex—there's always more to learn! 🌟📚

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getPaginatedPostsByTag } from '@/lib/posts'
+import { getPaginatedPostsByTag, getAllPosts } from '@/lib/posts'
 import { PostCard } from '@/components/ui/post-card'
 import { Header } from '@/components/ui/header'
 import { LayoutWithSidebar } from '@/components/ui/layout-with-sidebar'
@@ -12,6 +12,7 @@ import Link from 'next/link'
 interface TopicPageProps {
   params: {
     topic: string
+    pageNumber: string
   }
 }
 
@@ -25,20 +26,6 @@ const topicMap: Record<string, string> = {
   'nextjs': 'Next.js',
   'python': 'Python',
   'machine-learning': 'Machine Learning',
-  'deep-learning': 'Deep Learning',
-  'neural-networks': 'Neural Networks',
-  'computer-vision': 'Computer Vision',
-  'nlp': 'NLP',
-  'feature-engineering': 'Feature Engineering',
-  'ensemble-methods': 'Ensemble Methods',
-  'model-evaluation': 'Model Evaluation',
-  'hyperparameter-tuning': 'Hyperparameter Tuning',
-  'imbalanced-data': 'Imbalanced Data',
-  'ai-ethics': 'AI Ethics',
-  'responsible-ai': 'Responsible AI',
-  'tensorflow': 'TensorFlow',
-  'xgboost': 'XGBoost',
-  'opencv': 'OpenCV',
   'typescript': 'TypeScript',
   'docker': 'Docker',
   'devops': 'DevOps',
@@ -54,37 +41,44 @@ const topicMap: Record<string, string> = {
 
 export async function generateMetadata({ params }: TopicPageProps): Promise<Metadata> {
   const topicName = topicMap[params.topic]
+  const pageNumber = parseInt(params.pageNumber)
 
-  if (!topicName) {
+  if (!topicName || isNaN(pageNumber) || pageNumber < 1) {
     return {
-      title: 'Topic Not Found',
-      description: 'The requested topic could not be found.'
+      title: 'Page Not Found',
+      description: 'The requested page could not be found.'
     }
   }
 
   return {
-    title: `${topicName} - My Tech Blog`,
-    description: `Explore all articles and tutorials about ${topicName}. Stay up to date with the latest trends and best practices.`,
+    title: `${topicName} - Page ${pageNumber} - My Tech Blog`,
+    description: `Explore all articles and tutorials about ${topicName} - Page ${pageNumber}. Stay up to date with the latest trends and best practices.`,
     openGraph: {
-      title: `${topicName} - My Tech Blog`,
-      description: `Explore all articles and tutorials about ${topicName}. Stay up to date with the latest trends and best practices.`,
+      title: `${topicName} - Page ${pageNumber} - My Tech Blog`,
+      description: `Explore all articles and tutorials about ${topicName} - Page ${pageNumber}. Stay up to date with the latest trends and best practices.`,
       type: 'website'
     }
   }
 }
 
-export default function TopicPage({ params }: TopicPageProps) {
+export default function TopicPaginatedPage({ params }: TopicPageProps) {
   const topicName = topicMap[params.topic]
+  const pageNumber = parseInt(params.pageNumber)
 
-  if (!topicName) {
+  if (!topicName || isNaN(pageNumber) || pageNumber < 1) {
     notFound()
   }
 
-  const { posts, currentPage, totalPages, totalPosts, hasNextPage, hasPrevPage } = getPaginatedPostsByTag(params.topic, 1, 5)
+  const { posts, currentPage, totalPages, totalPosts, hasNextPage, hasPrevPage } = getPaginatedPostsByTag(params.topic, pageNumber, 5)
+
+  if (posts.length === 0 && pageNumber > 1) {
+    notFound()
+  }
 
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
-    { label: topicName }
+    { label: topicName, href: `/topics/${params.topic}` },
+    { label: `Page ${currentPage}` }
   ]
 
   return (
@@ -99,9 +93,10 @@ export default function TopicPage({ params }: TopicPageProps) {
               <Breadcrumb items={breadcrumbItems} />
 
               <div className="topic-header">
-                <h1 className="topic-title">{topicName}</h1>
+                <h1 className="topic-title">{topicName} {currentPage > 1 && `- Page ${currentPage}`}</h1>
                 <p className="topic-description">
                   {totalPosts} article{totalPosts !== 1 ? 's' : ''} about {topicName.toLowerCase()}
+                  {currentPage > 1 && ` - Page ${currentPage}`}
                 </p>
                 <Link href="/" className="back-to-posts">← Back to all posts</Link>
               </div>
@@ -137,7 +132,21 @@ export default function TopicPage({ params }: TopicPageProps) {
 }
 
 export async function generateStaticParams() {
-  return Object.keys(topicMap).map((topic) => ({
-    topic,
-  }))
+  const allPosts = getAllPosts()
+  const params: { topic: string; pageNumber: string }[] = []
+
+  // Generate params for all topics with pagination
+  Object.keys(topicMap).forEach(topic => {
+    const { totalPages } = getPaginatedPostsByTag(topic, 1, 5)
+
+    // Generate params for pages 2 and above (page 1 is handled by base topic route)
+    for (let i = 2; i <= totalPages; i++) {
+      params.push({
+        topic,
+        pageNumber: i.toString()
+      })
+    }
+  })
+
+  return params
 }

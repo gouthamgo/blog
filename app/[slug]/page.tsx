@@ -212,6 +212,8 @@ export default function PostPage({ params }: PostPageProps) {
               <MDXRemote source={post.content} components={MDXComponents} />
             </div>
 
+            {/* Author bio section - TODO: customize later */}
+            {/*
             <AuthorBio
               name={post.author}
               bio="Passionate tech blogger sharing insights on web development, programming, and the latest in technology. Always learning, always building."
@@ -222,6 +224,7 @@ export default function PostPage({ params }: PostPageProps) {
                 website: "https://example.com"
               }}
             />
+            */}
 
             <RelatedPosts posts={relatedPosts} currentPostSlug={post.slug} />
 
