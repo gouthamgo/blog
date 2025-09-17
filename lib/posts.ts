@@ -48,6 +48,62 @@ export function getAllPosts(): Post[] {
   return posts
 }
 
+export interface PaginatedPosts {
+  posts: Post[]
+  currentPage: number
+  totalPages: number
+  totalPosts: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+}
+
+export function getPaginatedPosts(page: number = 1, postsPerPage: number = 5): PaginatedPosts {
+  const allPosts = getAllPosts()
+  const totalPosts = allPosts.length
+  const totalPages = Math.ceil(totalPosts / postsPerPage)
+  const currentPage = Math.max(1, Math.min(page, totalPages))
+
+  const startIndex = (currentPage - 1) * postsPerPage
+  const endIndex = startIndex + postsPerPage
+  const posts = allPosts.slice(startIndex, endIndex)
+
+  return {
+    posts,
+    currentPage,
+    totalPages,
+    totalPosts,
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1
+  }
+}
+
+export function getPaginatedPostsByTag(tag: string, page: number = 1, postsPerPage: number = 5): PaginatedPosts {
+  const allPosts = getAllPosts()
+  const filteredPosts = allPosts.filter(post =>
+    post.tags?.some(postTag =>
+      postTag.toLowerCase().replace(/\s+/g, '-') === tag ||
+      postTag.toLowerCase() === tag.replace(/-/g, ' ')
+    )
+  )
+
+  const totalPosts = filteredPosts.length
+  const totalPages = Math.ceil(totalPosts / postsPerPage)
+  const currentPage = Math.max(1, Math.min(page, totalPages))
+
+  const startIndex = (currentPage - 1) * postsPerPage
+  const endIndex = startIndex + postsPerPage
+  const posts = filteredPosts.slice(startIndex, endIndex)
+
+  return {
+    posts,
+    currentPage,
+    totalPages,
+    totalPosts,
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1
+  }
+}
+
 export function getPostMetadata(slug: string): PostMetadata | null {
   const post = getPostBySlug(slug)
   if (!post) return null

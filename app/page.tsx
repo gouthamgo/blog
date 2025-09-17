@@ -1,10 +1,11 @@
-import { getAllPosts } from '@/lib/posts'
+import { getPaginatedPosts } from '@/lib/posts'
 import { Header } from '@/components/ui/header'
 import { PostCard } from '@/components/ui/post-card'
 import { LayoutWithSidebar } from '@/components/ui/layout-with-sidebar'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function HomePage() {
-  const posts = getAllPosts()
+  const { posts, currentPage, totalPages, totalPosts, hasNextPage, hasPrevPage } = getPaginatedPosts(1, 5)
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -36,6 +37,13 @@ export default function HomePage() {
                 ))}
               </div>
             )}
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalPosts={totalPosts}
+              postsPerPage={5}
+            />
           </div>
         </LayoutWithSidebar>
       </div>
