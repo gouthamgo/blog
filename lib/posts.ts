@@ -6,22 +6,46 @@ import type { Post, PostMetadata } from './types'
 
 const postsDirectory = path.join(process.cwd(), 'posts')
 
+function getAllMdxFiles(dir: string, fileList: string[] = []): string[] {
+  const files = fs.readdirSync(dir)
+
+  files.forEach((file) => {
+    const filePath = path.join(dir, file)
+    const stat = fs.statSync(filePath)
+
+    if (stat.isDirectory()) {
+      getAllMdxFiles(filePath, fileList)
+    } else if (file.endsWith('.mdx')) {
+      fileList.push(filePath)
+    }
+  })
+
+  return fileList
+}
+
 export function getPostSlugs(): string[] {
   if (!fs.existsSync(postsDirectory)) {
     return []
   }
-  return fs.readdirSync(postsDirectory).filter((file) => file.endsWith('.mdx'))
+  const mdxFiles = getAllMdxFiles(postsDirectory)
+  return mdxFiles.map(file => path.basename(file, '.mdx'))
 }
 
 export function getPostBySlug(slug: string): Post | null {
   const realSlug = slug.replace(/\.mdx$/, '')
-  const fullPath = path.join(postsDirectory, `${realSlug}.mdx`)
 
-  if (!fs.existsSync(fullPath)) {
+  if (!fs.existsSync(postsDirectory)) {
     return null
   }
 
-  const fileContents = fs.readFileSync(fullPath, 'utf8')
+  const mdxFiles = getAllMdxFiles(postsDirectory)
+  const matchingFile = mdxFiles.find(file => path.basename(file, '.mdx') === realSlug)
+
+  if (!matchingFile) {
+    return null
+  }
+
+  const fileContents = fs.readFileSync(matchingFile, 'utf8')
   const { data, content } = matter(fileContents)
   const readTime = readingTime(content)
 
