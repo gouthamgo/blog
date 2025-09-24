@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Search } from 'lucide-react'
+import { Search, Code2 } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 import { MobileMenu } from './mobile-menu'
 
@@ -9,7 +9,12 @@ export function Header() {
       <nav className="professional-nav">
         <div className="nav-brand">
           <Link href="/" className="brand-logo">
-            My Tech Blog
+            <Code2 className="logo-icon" size={24} />
+            <span className="logo-text">
+              <span className="logo-name">Goutham</span>
+              <span className="logo-divider">.</span>
+              <span className="logo-type">ai</span>
+            </span>
           </Link>
         </div>
 

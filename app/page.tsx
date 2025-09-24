@@ -15,10 +15,10 @@ export default function HomePage() {
         <LayoutWithSidebar>
           <div className="mb-16 text-center">
             <h1 className="medium-large-title mb-6">
-              Welcome to My Tech Blog
+              Welcome to Goutham.ai
             </h1>
             <p className="text-xl text-medium-gray-600 dark:text-medium-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Exploring the latest in web development, programming, and technology.
+              Exploring Artificial Intelligence, Machine Learning, and Coding through practical tutorials and insights.
               Join me on this journey of continuous learning and innovation.
             </p>
           </div>

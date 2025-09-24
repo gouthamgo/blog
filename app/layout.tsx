@@ -12,10 +12,10 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'My Tech Blog',
-  description: 'A modern tech blog built with Next.js and MDX',
-  authors: [{ name: 'Tech Blogger' }],
-  keywords: ['blog', 'tech', 'programming', 'web development'],
+  title: 'Goutham.ai - AI, ML & Tech Blog',
+  description: 'Exploring Artificial Intelligence, Machine Learning, and Coding through practical tutorials and insights by Goutham',
+  authors: [{ name: 'Goutham' }],
+  keywords: ['AI', 'ML', 'artificial intelligence', 'machine learning', 'blog', 'tech', 'programming', 'coding', 'tutorials'],
 }
 
 export default function RootLayout({

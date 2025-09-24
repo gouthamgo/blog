@@ -703,28 +703,66 @@ body.dark {
   }
 
   .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 24px;
     font-weight: 900;
-    color: #242424;
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    letter-spacing: -0.015em;
-    background: linear-gradient(135deg, #242424 0%, #1a8917 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    position: relative;
+  }
+
+  .logo-icon {
+    color: #1a8917;
+    transition: transform 0.3s ease;
+  }
+
+  .brand-logo:hover .logo-icon {
+    transform: rotate(10deg) scale(1.1);
+  }
+
+  .logo-text {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+  }
+
+  .logo-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #242424;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-divider {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a8917;
+    margin: 0 0.125rem;
+  }
+
+  .logo-type {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a8917;
+    letter-spacing: -0.02em;
   }
 
   .brand-logo:hover {
     transform: translateY(-2px);
-    filter: brightness(1.1);
   }
 
-  .dark .brand-logo {
+  .dark .brand-logo .logo-name {
     color: #ffffff !important;
-    background: none !important;
-    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  .dark .brand-logo .logo-icon {
+    color: #1a8917 !important;
+  }
+
+  .dark .brand-logo .logo-divider,
+  .dark .brand-logo .logo-type {
+    color: #1a8917 !important;
   }
 
   /* Navigation items container */
@@ -2096,14 +2134,25 @@ html {
 }
 
 .mobile-brand-logo {
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #242424;
   text-decoration: none;
 }
 
+.mobile-brand-logo svg {
+  color: #1a8917;
+}
+
 .dark .mobile-brand-logo {
   color: #ffffff !important;
+}
+
+.dark .mobile-brand-logo svg {
+  color: #1a8917 !important;
 }
 
 .mobile-menu-close {

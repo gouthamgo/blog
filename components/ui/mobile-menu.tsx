@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, Search } from 'lucide-react'
+import { Menu, X, Search, Code2 } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 
 export function MobileMenu() {
@@ -51,7 +51,8 @@ export function MobileMenu() {
       <nav className={`mobile-menu ${isOpen ? 'mobile-menu-open' : ''}`}>
         <div className="mobile-menu-header">
           <Link href="/" className="mobile-brand-logo" onClick={handleLinkClick}>
-            My Tech Blog
+            <Code2 size={20} />
+            <span>Goutham.ai</span>
           </Link>
           <button
             className="mobile-menu-close"
