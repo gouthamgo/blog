@@ -162,3 +162,8 @@ temp/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# Claude Code settings and configuration
+.claude/
+.claude/*
+*.claude
