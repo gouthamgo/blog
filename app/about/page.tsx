@@ -60,17 +60,17 @@ export default function AboutPage() {
                 </p>
                 <p>
                   This blog serves as both a learning journal and a knowledge-sharing platform, where complex technical
-                  concepts are broken down into digestible insights. Whether you're a seasoned developer, a curious beginner,
-                  or someone passionate about technology, you'll find content that challenges, educates, and inspires.
+                  concepts are broken down into digestible insights. Whether you&apos;re a seasoned developer, a curious beginner,
+                  or someone passionate about technology, you&apos;ll find content that challenges, educates, and inspires.
                 </p>
               </section>
 
               <section className="about-section">
                 <h2>About the Author</h2>
                 <p>
-                  I'm a passionate software developer with over a decade of experience building scalable web applications
+                  I&apos;m a passionate software developer with over a decade of experience building scalable web applications
                   and exploring cutting-edge technologies. My journey spans from startups to enterprise companies,
-                  where I've tackled challenges ranging from system architecture to user experience design.
+                  where I&apos;ve tackled challenges ranging from system architecture to user experience design.
                 </p>
                 <p>
                   With expertise in modern JavaScript frameworks, cloud technologies, and emerging AI tools, I bring
@@ -93,7 +93,7 @@ export default function AboutPage() {
                   to developers at all levels.
                 </p>
                 <p>
-                  Beyond personal growth, I'm motivated by the opportunity to contribute to the developer community that
+                  Beyond personal growth, I&apos;m motivated by the opportunity to contribute to the developer community that
                   has given me so much throughout my career. If these posts help even one developer solve a problem or
                   learn something new, then this effort is worthwhile.
                 </p>
@@ -104,7 +104,7 @@ export default function AboutPage() {
                 <p>
                   I love connecting with fellow developers, tech enthusiasts, and curious minds. Whether you have questions
                   about a post, want to discuss a technical challenge, or simply want to share your own experiences,
-                  I'd love to hear from you.
+                  I&apos;d love to hear from you.
                 </p>
                 <p>
                   Feel free to reach out through the <a href="/contact" className="about-link">contact page</a>,

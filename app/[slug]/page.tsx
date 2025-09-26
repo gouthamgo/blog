@@ -38,7 +38,9 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     description: post.description,
     authors: [{ name: post.author }],
     keywords: post.tags,
-    canonical: url,
+    alternates: {
+      canonical: url,
+    },
     robots: {
       index: true,
       follow: true,
@@ -76,9 +78,6 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
         url: post.image,
         alt: post.title,
       }] : [],
-    },
-    alternates: {
-      canonical: url,
     },
   }
 }

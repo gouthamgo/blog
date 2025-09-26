@@ -147,7 +147,7 @@ export default function PrivacyPolicyPage() {
                 </section>
 
                 <section className="legal-section">
-                  <h2>Children's Privacy</h2>
+                  <h2>Children&apos;s Privacy</h2>
                   <p>
                     Our website is not intended for children under 13 years of age. We do not knowingly collect
                     personal information from children under 13. If you believe we have collected information from
@@ -159,7 +159,7 @@ export default function PrivacyPolicyPage() {
                   <h2>Changes to This Policy</h2>
                   <p>
                     We may update this privacy policy from time to time. We will notify you of any changes by
-                    posting the new privacy policy on this page and updating the "Last updated" date.
+                    posting the new privacy policy on this page and updating the &quot;Last updated&quot; date.
                   </p>
                 </section>
 

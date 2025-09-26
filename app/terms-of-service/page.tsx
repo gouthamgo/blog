@@ -124,7 +124,7 @@ export default function TermsOfServicePage() {
 
                   <h3>No Warranties</h3>
                   <p>
-                    The information on this website is provided on an 'as is' basis. To the fullest extent permitted
+                    The information on this website is provided on an &apos;as is&apos; basis. To the fullest extent permitted
                     by law, this Company excludes all representations, warranties, conditions and terms relating to
                     our website and the use of this website.
                   </p>

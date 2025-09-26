@@ -32,7 +32,7 @@ export function NewsletterSignup() {
           <CheckCircle size={24} className="newsletter-icon success" />
           <h3 className="newsletter-title">Thanks for subscribing!</h3>
           <p className="newsletter-description">
-            You'll receive updates about new posts and tech insights.
+            You&apos;ll receive updates about new posts and tech insights.
           </p>
         </div>
       </div>

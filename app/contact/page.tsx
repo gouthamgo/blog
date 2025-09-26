@@ -49,15 +49,15 @@ export default function ContactPage() {
             <header className="contact-header">
               <h1 className="contact-title">Get in Touch</h1>
               <p className="contact-subtitle">
-                Have a question, suggestion, or just want to connect? I'd love to hear from you.
+                Have a question, suggestion, or just want to connect? I&apos;d love to hear from you.
               </p>
             </header>
 
             <div className="contact-content">
               <section className="contact-intro">
                 <p>
-                  Whether you're looking to discuss a technical challenge, share feedback about a post,
-                  explore collaboration opportunities, or simply connect with a fellow developer, I'm always
+                  Whether you&apos;re looking to discuss a technical challenge, share feedback about a post,
+                  explore collaboration opportunities, or simply connect with a fellow developer, I&apos;m always
                   excited to engage with the community.
                 </p>
                 <p>
@@ -72,7 +72,7 @@ export default function ContactPage() {
 
                   {isSubmitted && (
                     <div className="contact-success">
-                      <p>Thanks for your message! I'll get back to you soon.</p>
+                      <p>Thanks for your message! I&apos;ll get back to you soon.</p>
                     </div>
                   )}
 

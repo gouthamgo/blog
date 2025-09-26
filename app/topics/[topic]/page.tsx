@@ -124,7 +124,7 @@ export default function TopicPage({ params }: TopicPageProps) {
               ) : (
                 <div className="no-posts">
                   <h2>No posts found</h2>
-                  <p>We haven't published any articles about {topicName.toLowerCase()} yet. Check back soon!</p>
+                  <p>We haven&apos;t published any articles about {topicName.toLowerCase()} yet. Check back soon!</p>
                   <Link href="/" className="back-to-posts-btn">Browse all posts</Link>
                 </div>
               )}
