@@ -1,0 +1,1261 @@
+---
+title: "How to Build an MCP Server: Complete Developer Guide"
+description: "Learn to build powerful MCP (Model Context Protocol) servers from scratch. Complete guide covering architecture, implementation, tools, resources, and deployment strategies."
+date: "2025-09-28"
+author: "Tech Blogger"
+tags: ["MCP", "AI", "Server Development", "Model Context Protocol", "Integration"]
+image: "/images/mcp-server-guide.svg"
+readTime: "15 min read"
+---
+
+# How to Build an MCP Server: Complete Developer Guide
+
+The Model Context Protocol (MCP) is revolutionizing how AI applications interact with external tools and data sources. In this comprehensive guide, we'll walk through building a complete MCP server from scratch, covering everything from basic concepts to production deployment.
+
+## What is MCP?
+
+The Model Context Protocol (MCP) is an open standard that enables AI applications to securely access and interact with external tools, data sources, and services. Think of it as a bridge between AI models and the real world.
+
+### Key Benefits of MCP
+
+```typescript
+// Before MCP: Hardcoded integrations
+const response = await openai.chat.completions.create({
+  messages: [{
+    role: "user",
+    content: "What's the weather like?"
+  }],
+  // Limited to training data
+});
+
+// With MCP: Dynamic tool access
+const response = await aiAssistant.chat({
+  message: "What's the weather like?",
+  tools: ["weather_api", "location_service"], // Real-time data
+});
+```
+
+**Why MCP Matters:**
+- **Standardized Integration**: One protocol for all external tools
+- **Security**: Controlled access with proper authentication
+- **Flexibility**: Add new capabilities without changing AI code
+- **Scalability**: Distribute tools across multiple servers
+
+## MCP Architecture Overview
+
+MCP follows a client-server architecture with JSON-RPC communication:
+
+```
+┌─────────────────┐    MCP Protocol    ┌─────────────────┐
+│   AI Client     │ ←──────────────→  │   MCP Server    │
+│  (Claude App)   │   JSON-RPC/HTTP   │ (Your Service)  │
+└─────────────────┘                    └─────────────────┘
+```
+
+### Core Components
+
+1. **Tools**: Functions the AI can call
+2. **Resources**: Data sources the AI can read
+3. **Prompts**: Reusable prompt templates
+4. **Transport**: Communication layer (HTTP, WebSocket, stdio)
+
+## Setting Up Your Development Environment
+
+Let's start by setting up a robust MCP server development environment:
+
+### Prerequisites
+
+```bash
+# Node.js 18+ required
+node --version
+
+# Install MCP SDK
+npm install @modelcontextprotocol/sdk
+
+# Development tools
+npm install -D typescript @types/node tsx nodemon
+```
+
+### Project Structure
+
+```
+mcp-server/
+├── src/
+│   ├── index.ts           # Server entry point
+│   ├── tools/             # Tool implementations
+│   │   ├── weather.ts
+│   │   ├── database.ts
+│   │   └── filesystem.ts
+│   ├── resources/         # Resource providers
+│   │   ├── documents.ts
+│   │   └── logs.ts
+│   ├── types/             # TypeScript definitions
+│   └── utils/             # Helper functions
+├── config/
+│   └── mcp.json          # Server configuration
+├── package.json
+└── tsconfig.json
+```
+
+### Basic TypeScript Configuration
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+## Building Your First MCP Server
+
+Let's create a comprehensive MCP server with multiple tools and resources:
+
+### 1. Server Foundation
+
+```typescript
+// src/index.ts
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+import { WeatherTool } from './tools/weather.js';
+import { DatabaseTool } from './tools/database.js';
+import { FileSystemTool } from './tools/filesystem.js';
+import { DocumentResource } from './resources/documents.js';
+
+class MCPServer {
+  private server: Server;
+  private weatherTool: WeatherTool;
+  private databaseTool: DatabaseTool;
+  private fileSystemTool: FileSystemTool;
+  private documentResource: DocumentResource;
+
+  constructor() {
+    this.server = new Server(
+      {
+        name: 'comprehensive-mcp-server',
+        version: '1.0.0',
+      },
+      {
+        capabilities: {
+          tools: {},
+          resources: {},
+        },
+      }
+    );
+
+    // Initialize tools and resources
+    this.weatherTool = new WeatherTool();
+    this.databaseTool = new DatabaseTool();
+    this.fileSystemTool = new FileSystemTool();
+    this.documentResource = new DocumentResource();
+
+    this.setupHandlers();
+  }
+
+  private setupHandlers() {
+    // Tool listing
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+      tools: [
+        ...this.weatherTool.getTools(),
+        ...this.databaseTool.getTools(),
+        ...this.fileSystemTool.getTools(),
+      ],
+    }));
+
+    // Tool execution
+    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params;
+
+      switch (name) {
+        case 'get_weather':
+          return this.weatherTool.getWeather(args);
+        case 'query_database':
+          return this.databaseTool.query(args);
+        case 'read_file':
+          return this.fileSystemTool.readFile(args);
+        case 'write_file':
+          return this.fileSystemTool.writeFile(args);
+        case 'list_directory':
+          return this.fileSystemTool.listDirectory(args);
+        default:
+          throw new Error(`Unknown tool: ${name}`);
+      }
+    });
+
+    // Resource listing
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+      resources: this.documentResource.getResources(),
+    }));
+
+    // Resource reading
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      return this.documentResource.readResource(request.params.uri);
+    });
+  }
+
+  async start() {
+    const transport = new StdioServerTransport();
+    await this.server.connect(transport);
+    console.log('MCP Server started successfully');
+  }
+}
+
+// Start the server
+const server = new MCPServer();
+server.start().catch(console.error);
+```
+
+### 2. Weather Tool Implementation
+
+```typescript
+// src/tools/weather.ts
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
+
+export class WeatherTool {
+  private apiKey: string;
+
+  constructor() {
+    this.apiKey = process.env.WEATHER_API_KEY || '';
+  }
+
+  getTools(): Tool[] {
+    return [
+      {
+        name: 'get_weather',
+        description: 'Get current weather information for a location',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            location: {
+              type: 'string',
+              description: 'City name or coordinates (lat,lon)',
+            },
+            units: {
+              type: 'string',
+              enum: ['metric', 'imperial', 'kelvin'],
+              default: 'metric',
+              description: 'Temperature units',
+            },
+          },
+          required: ['location'],
+        },
+      },
+    ];
+  }
+
+  async getWeather(args: any) {
+    const { location, units = 'metric' } = args;
+
+    if (!this.apiKey) {
+      return {
+        content: [{
+          type: 'text',
+          text: 'Weather API key not configured. Please set WEATHER_API_KEY environment variable.',
+        }],
+      };
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
+          location
+        )}&units=${units}&appid=${this.apiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Weather API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const weatherInfo = {
+        location: data.name,
+        country: data.sys.country,
+        temperature: data.main.temp,
+        feels_like: data.main.feels_like,
+        humidity: data.main.humidity,
+        pressure: data.main.pressure,
+        description: data.weather[0].description,
+        wind_speed: data.wind?.speed || 0,
+        visibility: data.visibility / 1000, // Convert to km
+      };
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify(weatherInfo, null, 2),
+        }],
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Error fetching weather data: ${error.message}`,
+        }],
+        isError: true,
+      };
+    }
+  }
+}
+```
+
+### 3. Database Tool Implementation
+
+```typescript
+// src/tools/database.ts
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import sqlite3 from 'sqlite3';
+import { open, Database } from 'sqlite';
+
+export class DatabaseTool {
+  private db: Database | null = null;
+
+  constructor() {
+    this.initializeDatabase();
+  }
+
+  private async initializeDatabase() {
+    try {
+      this.db = await open({
+        filename: './data/app.db',
+        driver: sqlite3.Database,
+      });
+
+      // Create sample tables
+      await this.db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT UNIQUE NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS posts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          content TEXT,
+          user_id INTEGER,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users (id)
+        );
+      `);
+
+      console.log('Database initialized successfully');
+    } catch (error) {
+      console.error('Database initialization failed:', error);
+    }
+  }
+
+  getTools(): Tool[] {
+    return [
+      {
+        name: 'query_database',
+        description: 'Execute SQL queries on the database',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'SQL query to execute',
+            },
+            params: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Parameters for the SQL query',
+            },
+          },
+          required: ['query'],
+        },
+      },
+    ];
+  }
+
+  async query(args: any) {
+    const { query, params = [] } = args;
+
+    if (!this.db) {
+      return {
+        content: [{
+          type: 'text',
+          text: 'Database not initialized',
+        }],
+        isError: true,
+      };
+    }
+
+    try {
+      // Security: Only allow SELECT statements for safety
+      if (!query.trim().toLowerCase().startsWith('select')) {
+        return {
+          content: [{
+            type: 'text',
+            text: 'Only SELECT queries are allowed for security reasons',
+          }],
+          isError: true,
+        };
+      }
+
+      const results = await this.db.all(query, params);
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify(results, null, 2),
+        }],
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Database query error: ${error.message}`,
+        }],
+        isError: true,
+      };
+    }
+  }
+}
+```
+
+### 4. File System Tool Implementation
+
+```typescript
+// src/tools/filesystem.ts
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+export class FileSystemTool {
+  private allowedPaths: string[];
+
+  constructor() {
+    // Define allowed paths for security
+    this.allowedPaths = [
+      './data',
+      './uploads',
+      './temp',
+    ];
+  }
+
+  getTools(): Tool[] {
+    return [
+      {
+        name: 'read_file',
+        description: 'Read content from a file',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'File path to read',
+            },
+          },
+          required: ['path'],
+        },
+      },
+      {
+        name: 'write_file',
+        description: 'Write content to a file',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'File path to write',
+            },
+            content: {
+              type: 'string',
+              description: 'Content to write',
+            },
+          },
+          required: ['path', 'content'],
+        },
+      },
+      {
+        name: 'list_directory',
+        description: 'List files and directories',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'Directory path to list',
+            },
+          },
+          required: ['path'],
+        },
+      },
+    ];
+  }
+
+  private isPathAllowed(filePath: string): boolean {
+    const normalizedPath = path.normalize(filePath);
+    return this.allowedPaths.some(allowedPath =>
+      normalizedPath.startsWith(path.normalize(allowedPath))
+    );
+  }
+
+  async readFile(args: any) {
+    const { path: filePath } = args;
+
+    if (!this.isPathAllowed(filePath)) {
+      return {
+        content: [{
+          type: 'text',
+          text: 'Access denied: Path not in allowed directories',
+        }],
+        isError: true,
+      };
+    }
+
+    try {
+      const content = await fs.readFile(filePath, 'utf8');
+      return {
+        content: [{
+          type: 'text',
+          text: content,
+        }],
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Error reading file: ${error.message}`,
+        }],
+        isError: true,
+      };
+    }
+  }
+
+  async writeFile(args: any) {
+    const { path: filePath, content } = args;
+
+    if (!this.isPathAllowed(filePath)) {
+      return {
+        content: [{
+          type: 'text',
+          text: 'Access denied: Path not in allowed directories',
+        }],
+        isError: true,
+      };
+    }
+
+    try {
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      await fs.writeFile(filePath, content, 'utf8');
+
+      return {
+        content: [{
+          type: 'text',
+          text: `File written successfully: ${filePath}`,
+        }],
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Error writing file: ${error.message}`,
+        }],
+        isError: true,
+      };
+    }
+  }
+
+  async listDirectory(args: any) {
+    const { path: dirPath } = args;
+
+    if (!this.isPathAllowed(dirPath)) {
+      return {
+        content: [{
+          type: 'text',
+          text: 'Access denied: Path not in allowed directories',
+        }],
+        isError: true,
+      };
+    }
+
+    try {
+      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      const fileList = entries.map(entry => ({
+        name: entry.name,
+        type: entry.isDirectory() ? 'directory' : 'file',
+        path: path.join(dirPath, entry.name),
+      }));
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify(fileList, null, 2),
+        }],
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Error listing directory: ${error.message}`,
+        }],
+        isError: true,
+      };
+    }
+  }
+}
+```
+
+### 5. Document Resource Implementation
+
+```typescript
+// src/resources/documents.ts
+import { Resource } from '@modelcontextprotocol/sdk/types.js';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+export class DocumentResource {
+  private documentsPath = './documents';
+
+  getResources(): Resource[] {
+    return [
+      {
+        uri: 'document://README',
+        name: 'Project README',
+        description: 'Main project documentation',
+        mimeType: 'text/markdown',
+      },
+      {
+        uri: 'document://API_DOCS',
+        name: 'API Documentation',
+        description: 'Complete API reference',
+        mimeType: 'text/markdown',
+      },
+    ];
+  }
+
+  async readResource(uri: string) {
+    try {
+      let filePath: string;
+
+      switch (uri) {
+        case 'document://README':
+          filePath = path.join(this.documentsPath, 'README.md');
+          break;
+        case 'document://API_DOCS':
+          filePath = path.join(this.documentsPath, 'API.md');
+          break;
+        default:
+          throw new Error(`Unknown resource: ${uri}`);
+      }
+
+      const content = await fs.readFile(filePath, 'utf8');
+
+      return {
+        contents: [{
+          uri,
+          mimeType: 'text/markdown',
+          text: content,
+        }],
+      };
+    } catch (error) {
+      throw new Error(`Error reading resource: ${error.message}`);
+    }
+  }
+}
+```
+
+## Advanced Features
+
+### Error Handling and Logging
+
+```typescript
+// src/utils/logger.ts
+import winston from 'winston';
+
+export const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+    new winston.transports.Console({
+      format: winston.format.simple()
+    }),
+  ],
+});
+
+// Enhanced error handling wrapper
+export function withErrorHandling<T extends any[], R>(
+  fn: (...args: T) => Promise<R>
+) {
+  return async (...args: T): Promise<R> => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      logger.error('Tool execution error', { error, args });
+      throw error;
+    }
+  };
+}
+```
+
+### Authentication and Security
+
+```typescript
+// src/utils/auth.ts
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+
+export class AuthManager {
+  private secretKey: string;
+
+  constructor() {
+    this.secretKey = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+  }
+
+  generateToken(payload: any): string {
+    return jwt.sign(payload, this.secretKey, { expiresIn: '1h' });
+  }
+
+  verifyToken(token: string): any {
+    try {
+      return jwt.verify(token, this.secretKey);
+    } catch (error) {
+      throw new Error('Invalid authentication token');
+    }
+  }
+
+  // Rate limiting implementation
+  private requestCounts = new Map<string, { count: number; resetTime: number }>();
+
+  checkRateLimit(clientId: string, maxRequests = 100, windowMs = 60000): boolean {
+    const now = Date.now();
+    const clientData = this.requestCounts.get(clientId);
+
+    if (!clientData || now > clientData.resetTime) {
+      this.requestCounts.set(clientId, {
+        count: 1,
+        resetTime: now + windowMs,
+      });
+      return true;
+    }
+
+    if (clientData.count >= maxRequests) {
+      return false;
+    }
+
+    clientData.count++;
+    return true;
+  }
+}
+```
+
+### Configuration Management
+
+```typescript
+// src/config/index.ts
+import { z } from 'zod';
+
+const ConfigSchema = z.object({
+  server: z.object({
+    name: z.string(),
+    version: z.string(),
+    port: z.number().optional(),
+  }),
+  database: z.object({
+    type: z.enum(['sqlite', 'postgresql', 'mysql']),
+    url: z.string(),
+  }),
+  apis: z.object({
+    weather: z.object({
+      apiKey: z.string(),
+      baseUrl: z.string().url(),
+    }),
+  }),
+  security: z.object({
+    jwtSecret: z.string(),
+    allowedOrigins: z.array(z.string()),
+    rateLimiting: z.object({
+      maxRequests: z.number(),
+      windowMs: z.number(),
+    }),
+  }),
+});
+
+export type Config = z.infer<typeof ConfigSchema>;
+
+export function loadConfig(): Config {
+  const config = {
+    server: {
+      name: process.env.SERVER_NAME || 'mcp-server',
+      version: process.env.SERVER_VERSION || '1.0.0',
+      port: parseInt(process.env.PORT || '3000'),
+    },
+    database: {
+      type: (process.env.DB_TYPE || 'sqlite') as 'sqlite',
+      url: process.env.DB_URL || './data/app.db',
+    },
+    apis: {
+      weather: {
+        apiKey: process.env.WEATHER_API_KEY || '',
+        baseUrl: 'https://api.openweathermap.org/data/2.5',
+      },
+    },
+    security: {
+      jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
+      allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
+      rateLimiting: {
+        maxRequests: parseInt(process.env.RATE_LIMIT_MAX || '100'),
+        windowMs: parseInt(process.env.RATE_LIMIT_WINDOW || '60000'),
+      },
+    },
+  };
+
+  return ConfigSchema.parse(config);
+}
+```
+
+## Client Configuration
+
+To use your MCP server with Claude Desktop, configure it in your Claude settings:
+
+### Claude Desktop Configuration
+
+```json
+// ~/.config/claude-desktop/config.json (Linux/macOS)
+// %APPDATA%/claude-desktop/config.json (Windows)
+{
+  "mcpServers": {
+    "comprehensive-server": {
+      "command": "node",
+      "args": ["./dist/index.js"],
+      "cwd": "/path/to/your/mcp-server",
+      "env": {
+        "WEATHER_API_KEY": "your-api-key",
+        "DB_URL": "./data/app.db"
+      }
+    }
+  }
+}
+```
+
+### Environment Variables Setup
+
+```bash
+# .env file
+SERVER_NAME=comprehensive-mcp-server
+SERVER_VERSION=1.0.0
+PORT=3000
+
+# Database
+DB_TYPE=sqlite
+DB_URL=./data/app.db
+
+# APIs
+WEATHER_API_KEY=your-weather-api-key
+
+# Security
+JWT_SECRET=your-jwt-secret-key
+ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
+RATE_LIMIT_MAX=100
+RATE_LIMIT_WINDOW=60000
+```
+
+## Testing Your MCP Server
+
+### Unit Testing
+
+```typescript
+// tests/tools/weather.test.ts
+import { describe, it, expect, beforeEach } from 'vitest';
+import { WeatherTool } from '../../src/tools/weather.js';
+
+describe('WeatherTool', () => {
+  let weatherTool: WeatherTool;
+
+  beforeEach(() => {
+    weatherTool = new WeatherTool();
+  });
+
+  it('should return weather tools definition', () => {
+    const tools = weatherTool.getTools();
+    expect(tools).toHaveLength(1);
+    expect(tools[0].name).toBe('get_weather');
+  });
+
+  it('should handle missing API key gracefully', async () => {
+    const result = await weatherTool.getWeather({ location: 'London' });
+    expect(result.content[0].text).toContain('API key not configured');
+  });
+});
+```
+
+### Integration Testing
+
+```typescript
+// tests/integration/server.test.ts
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { MCPServer } from '../../src/index.js';
+
+describe('MCP Server Integration', () => {
+  let server: MCPServer;
+
+  beforeAll(async () => {
+    server = new MCPServer();
+    await server.start();
+  });
+
+  afterAll(async () => {
+    await server.stop();
+  });
+
+  it('should handle tool listing requests', async () => {
+    // Test tool listing functionality
+  });
+
+  it('should execute tools correctly', async () => {
+    // Test tool execution
+  });
+});
+```
+
+### Manual Testing Script
+
+```typescript
+// scripts/test-server.ts
+import { MCPClient } from '@modelcontextprotocol/sdk/client/index.js';
+
+async function testServer() {
+  const client = new MCPClient({
+    name: 'test-client',
+    version: '1.0.0',
+  });
+
+  try {
+    // Test tool listing
+    const tools = await client.request({
+      method: 'tools/list',
+    });
+    console.log('Available tools:', tools);
+
+    // Test weather tool
+    const weather = await client.request({
+      method: 'tools/call',
+      params: {
+        name: 'get_weather',
+        arguments: { location: 'London' },
+      },
+    });
+    console.log('Weather result:', weather);
+
+  } catch (error) {
+    console.error('Test failed:', error);
+  }
+}
+
+testServer();
+```
+
+## Production Deployment
+
+### Docker Configuration
+
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY src/ ./src/
+
+# Build TypeScript
+RUN npm run build
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S mcp -u 1001
+
+# Create data directories
+RUN mkdir -p ./data ./documents
+RUN chown -R mcp:nodejs ./data ./documents
+
+USER mcp
+
+EXPOSE 3000
+
+CMD ["node", "dist/index.js"]
+```
+
+### Docker Compose
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  mcp-server:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_URL=/app/data/app.db
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+    volumes:
+      - ./data:/app/data
+      - ./documents:/app/documents
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/ssl
+    depends_on:
+      - mcp-server
+    restart: unless-stopped
+```
+
+### Monitoring and Observability
+
+```typescript
+// src/monitoring/metrics.ts
+import prometheus from 'prom-client';
+
+export class MetricsCollector {
+  private registry: prometheus.Registry;
+  private httpRequestDuration: prometheus.Histogram<string>;
+  private httpRequestCount: prometheus.Counter<string>;
+  private toolExecutionDuration: prometheus.Histogram<string>;
+
+  constructor() {
+    this.registry = new prometheus.Registry();
+
+    this.httpRequestDuration = new prometheus.Histogram({
+      name: 'http_request_duration_seconds',
+      help: 'Duration of HTTP requests in seconds',
+      labelNames: ['method', 'route', 'status'],
+    });
+
+    this.httpRequestCount = new prometheus.Counter({
+      name: 'http_requests_total',
+      help: 'Total number of HTTP requests',
+      labelNames: ['method', 'route', 'status'],
+    });
+
+    this.toolExecutionDuration = new prometheus.Histogram({
+      name: 'tool_execution_duration_seconds',
+      help: 'Duration of tool executions in seconds',
+      labelNames: ['tool_name', 'status'],
+    });
+
+    this.registry.registerMetric(this.httpRequestDuration);
+    this.registry.registerMetric(this.httpRequestCount);
+    this.registry.registerMetric(this.toolExecutionDuration);
+  }
+
+  collectDefaultMetrics() {
+    prometheus.collectDefaultMetrics({ register: this.registry });
+  }
+
+  getMetrics() {
+    return this.registry.metrics();
+  }
+
+  recordHttpRequest(method: string, route: string, status: number, duration: number) {
+    this.httpRequestCount.inc({ method, route, status: status.toString() });
+    this.httpRequestDuration.observe({ method, route, status: status.toString() }, duration);
+  }
+
+  recordToolExecution(toolName: string, status: string, duration: number) {
+    this.toolExecutionDuration.observe({ tool_name: toolName, status }, duration);
+  }
+}
+```
+
+## Best Practices and Security
+
+### Security Guidelines
+
+1. **Input Validation**: Always validate and sanitize inputs
+2. **Path Traversal**: Prevent access to unauthorized files
+3. **Rate Limiting**: Implement request throttling
+4. **Authentication**: Use proper token-based auth
+5. **Error Handling**: Don't expose internal details
+
+### Performance Optimization
+
+```typescript
+// src/utils/cache.ts
+import NodeCache from 'node-cache';
+
+export class CacheManager {
+  private cache: NodeCache;
+
+  constructor(ttlSeconds = 600) {
+    this.cache = new NodeCache({ stdTTL: ttlSeconds });
+  }
+
+  get<T>(key: string): T | undefined {
+    return this.cache.get<T>(key);
+  }
+
+  set<T>(key: string, value: T, ttl?: number): boolean {
+    return this.cache.set(key, value, ttl);
+  }
+
+  del(key: string): number {
+    return this.cache.del(key);
+  }
+
+  flush(): void {
+    this.cache.flushAll();
+  }
+
+  // Cache decorator for expensive operations
+  memoize<T extends any[], R>(
+    fn: (...args: T) => Promise<R>,
+    keyGenerator: (...args: T) => string,
+    ttl?: number
+  ) {
+    return async (...args: T): Promise<R> => {
+      const key = keyGenerator(...args);
+      const cached = this.get<R>(key);
+
+      if (cached !== undefined) {
+        return cached;
+      }
+
+      const result = await fn(...args);
+      this.set(key, result, ttl);
+      return result;
+    };
+  }
+}
+```
+
+### Development Workflow
+
+```json
+// package.json scripts
+{
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:integration": "vitest run tests/integration",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "type-check": "tsc --noEmit",
+    "validate": "npm run type-check && npm run lint && npm run test"
+  }
+}
+```
+
+## Troubleshooting Common Issues
+
+### Connection Problems
+
+```typescript
+// Debug connection issues
+const debugTransport = {
+  start: async () => {
+    console.log('Transport starting...');
+  },
+  send: async (message: any) => {
+    console.log('Sending message:', JSON.stringify(message, null, 2));
+  },
+  close: async () => {
+    console.log('Transport closing...');
+  },
+};
+```
+
+### Tool Execution Errors
+
+```typescript
+// Enhanced error reporting
+export function createToolWrapper(tool: any) {
+  return {
+    ...tool,
+    execute: async (args: any) => {
+      const startTime = Date.now();
+      try {
+        const result = await tool.execute(args);
+        const duration = Date.now() - startTime;
+        console.log(`Tool ${tool.name} executed successfully in ${duration}ms`);
+        return result;
+      } catch (error) {
+        const duration = Date.now() - startTime;
+        console.error(`Tool ${tool.name} failed after ${duration}ms:`, error);
+        throw error;
+      }
+    },
+  };
+}
+```
+
+## Conclusion
+
+Building an MCP server opens up powerful possibilities for AI integration. You've learned how to:
+
+- Set up a complete MCP server architecture
+- Implement tools, resources, and security features
+- Handle authentication, caching, and monitoring
+- Deploy to production with Docker
+- Test and debug your implementation
+
+### Next Steps
+
+1. **Expand Tool Library**: Add domain-specific tools
+2. **Enhance Security**: Implement OAuth2 or advanced auth
+3. **Scale Performance**: Add clustering and load balancing
+4. **Monitor Usage**: Implement comprehensive analytics
+5. **Community**: Contribute to MCP ecosystem
+
+The MCP ecosystem is growing rapidly, and your server can be part of the next generation of AI-powered applications. Start building, experiment with different tools, and join the community of developers pushing the boundaries of AI integration.
+
+### Resources
+
+- [MCP Specification](https://spec.modelcontextprotocol.io/)
+- [MCP SDK Documentation](https://modelcontextprotocol.io/sdk)
+- [Example Servers](https://github.com/modelcontextprotocol/servers)
+- [Community Discord](https://discord.gg/mcp)
+
+Happy building! 🚀
