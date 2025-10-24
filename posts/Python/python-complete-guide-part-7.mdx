@@ -1,0 +1,536 @@
+---
+title: "Python from A to Z: Part 7 - Advanced Python Concepts"
+description: "Master iterators, generators, decorators, context managers, and advanced comprehensions. Level up your Python skills for senior-level interviews."
+date: "2025-10-24"
+author: "Goutham"
+tags: ["Python", "Advanced", "Generators", "Decorators", "Coding Interviews"]
+image: "/images/python-advanced.svg"
+readTime: "18 min read"
+---
+
+# Python from A to Z: Part 7 - Advanced Python Concepts
+
+Level up with advanced Python features that separate beginners from experts!
+
+## Iterators
+
+### Understanding Iteration
+
+```python
+# Behind the scenes of for loop
+numbers = [1, 2, 3]
+
+# What Python actually does:
+iterator = iter(numbers)  # Get iterator
+while True:
+    try:
+        item = next(iterator)  # Get next item
+        print(item)
+    except StopIteration:
+        break  # No more items
+```
+
+### Creating Custom Iterator
+
+```python
+class Countdown:
+    def __init__(self, start):
+        self.current = start
+
+    def __iter__(self):
+        return self  # Return iterator object
+
+    def __next__(self):
+        if self.current <= 0:
+            raise StopIteration
+        self.current -= 1
+        return self.current + 1
+
+# Usage
+for num in Countdown(5):
+    print(num)  # 5 4 3 2 1
+```
+
+## Generators
+
+### Generator Functions
+
+```python
+# Generator using yield
+def countdown(n):
+    while n > 0:
+        yield n  # Pause and return value
+        n -= 1
+
+# Usage
+for num in countdown(5):
+    print(num)  # 5 4 3 2 1
+
+# Generators are memory efficient
+gen = countdown(1000000)  # Doesn't create list in memory
+print(next(gen))  # 1000000
+print(next(gen))  # 999999
+```
+
+### Generator Expressions
+
+```python
+# List comprehension (creates list in memory)
+squares_list = [x**2 for x in range(1000000)]
+
+# Generator expression (creates on-the-fly)
+squares_gen = (x**2 for x in range(1000000))
+
+# Get next value
+print(next(squares_gen))  # 0
+print(next(squares_gen))  # 1
+
+# Use in functions
+total = sum(x**2 for x in range(100))
+```
+
+### Practical Generator Examples
+
+```python
+# Reading large files
+def read_large_file(filepath):
+    with open(filepath, 'r') as f:
+        for line in f:
+            yield line.strip()
+
+# Fibonacci generator
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+fib = fibonacci()
+print([next(fib) for _ in range(10)])  # [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+# Infinite sequence
+def infinite_sequence():
+    num = 0
+    while True:
+        yield num
+        num += 1
+```
+
+## Decorators
+
+### Function Decorators
+
+```python
+# Basic decorator
+def my_decorator(func):
+    def wrapper():
+        print("Before function")
+        func()
+        print("After function")
+    return wrapper
+
+@my_decorator
+def say_hello():
+    print("Hello!")
+
+say_hello()
+# Output:
+# Before function
+# Hello!
+# After function
+```
+
+### Decorators with Arguments
+
+```python
+# Decorator that accepts arguments
+def repeat(times):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for _ in range(times):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def greet(name):
+    print(f"Hello, {name}!")
+
+greet("Alice")
+# Output:
+# Hello, Alice!
+# Hello, Alice!
+# Hello, Alice!
+```
+
+### Practical Decorators
+
+```python
+import time
+import functools
+
+# Timer decorator
+def timer(func):
+    @functools.wraps(func)  # Preserve original function metadata
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end-start:.2f}s")
+        return result
+    return wrapper
+
+@timer
+def slow_function():
+    time.sleep(1)
+    return "Done"
+
+# Memoization decorator
+def memoize(func):
+    cache = {}
+    @functools.wraps(func)
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+    return wrapper
+
+@memoize
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+print(fibonacci(100))  # Fast with memoization!
+```
+
+### Class Decorators
+
+```python
+def singleton(cls):
+    instances = {}
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance
+
+@singleton
+class Database:
+    def __init__(self):
+        print("Connecting to database...")
+
+db1 = Database()  # Connecting to database...
+db2 = Database()  # No output (same instance)
+print(db1 is db2)  # True
+```
+
+## Context Managers
+
+### Using `with` Statement
+
+```python
+# Old way (manual cleanup)
+file = open("data.txt", "r")
+try:
+    data = file.read()
+finally:
+    file.close()
+
+# New way (automatic cleanup)
+with open("data.txt", "r") as file:
+    data = file.read()
+# File automatically closed
+```
+
+### Creating Context Managers
+
+```python
+# Using class
+class FileManager:
+    def __init__(self, filename, mode):
+        self.filename = filename
+        self.mode = mode
+        self.file = None
+
+    def __enter__(self):
+        self.file = open(self.filename, self.mode)
+        return self.file
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.file:
+            self.file.close()
+
+# Usage
+with FileManager("test.txt", "w") as f:
+    f.write("Hello, World!")
+
+# Using contextlib
+from contextlib import contextmanager
+
+@contextmanager
+def file_manager(filename, mode):
+    file = open(filename, mode)
+    try:
+        yield file
+    finally:
+        file.close()
+
+# Usage
+with file_manager("test.txt", "r") as f:
+    content = f.read()
+```
+
+## Advanced Comprehensions
+
+### Nested Comprehensions
+
+```python
+# Flatten 2D list
+matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+flat = [num for row in matrix for num in row]
+# [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+# Transpose matrix
+transposed = [[row[i] for row in matrix] for i in range(3)]
+# [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
+```
+
+### Dict and Set Comprehensions
+
+```python
+# Dictionary comprehension
+squares = {x: x**2 for x in range(1, 6)}
+# {1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
+
+# Set comprehension
+evens = {x for x in range(10) if x % 2 == 0}
+# {0, 2, 4, 6, 8}
+
+# Complex example
+text = "hello world"
+char_count = {char: text.count(char) for char in set(text) if char != ' '}
+```
+
+## Modules and Packages
+
+### Creating Modules
+
+```python
+# mymodule.py
+def greet(name):
+    return f"Hello, {name}!"
+
+PI = 3.14159
+
+# main.py
+import mymodule
+print(mymodule.greet("Alice"))
+print(mymodule.PI)
+
+# Or
+from mymodule import greet, PI
+print(greet("Bob"))
+
+# Or
+from mymodule import *  # Not recommended
+```
+
+### Package Structure
+
+```
+mypackage/
+    __init__.py
+    module1.py
+    module2.py
+    subpackage/
+        __init__.py
+        module3.py
+```
+
+```python
+# __init__.py
+from .module1 import func1
+from .module2 import func2
+
+# Usage
+from mypackage import func1, func2
+```
+
+## Virtual Environments
+
+```bash
+# Create virtual environment
+python -m venv myenv
+
+# Activate
+# Windows
+myenv\Scripts\activate
+# Mac/Linux
+source myenv/bin/activate
+
+# Install packages
+pip install requests numpy pandas
+
+# Save dependencies
+pip freeze > requirements.txt
+
+# Install from requirements
+pip install -r requirements.txt
+
+# Deactivate
+deactivate
+```
+
+## Exception Handling (Advanced)
+
+### Custom Exception Hierarchy
+
+```python
+class ValidationError(Exception):
+    pass
+
+class EmptyFieldError(ValidationError):
+    pass
+
+class InvalidFormatError(ValidationError):
+    pass
+
+def validate_email(email):
+    if not email:
+        raise EmptyFieldError("Email cannot be empty")
+    if "@" not in email:
+        raise InvalidFormatError("Invalid email format")
+    return True
+
+try:
+    validate_email("")
+except EmptyFieldError as e:
+    print(f"Empty field: {e}")
+except InvalidFormatError as e:
+    print(f"Format error: {e}")
+except ValidationError as e:
+    print(f"Validation error: {e}")
+```
+
+## Advanced Function Techniques
+
+### Partial Functions
+
+```python
+from functools import partial
+
+def power(base, exponent):
+    return base ** exponent
+
+square = partial(power, exponent=2)
+cube = partial(power, exponent=3)
+
+print(square(5))  # 25
+print(cube(3))    # 27
+```
+
+### Function Composition
+
+```python
+def compose(*functions):
+    def inner(arg):
+        result = arg
+        for func in reversed(functions):
+            result = func(result)
+        return result
+    return inner
+
+def add_one(x):
+    return x + 1
+
+def double(x):
+    return x * 2
+
+def square(x):
+    return x ** 2
+
+pipeline = compose(square, double, add_one)
+print(pipeline(3))  # ((3 + 1) * 2)^2 = 64
+```
+
+## Interview Questions
+
+**Q1: Iterator vs Generator?**
+- Iterator: object with `__iter__` and `__next__`
+- Generator: function with `yield` (creates iterator)
+
+**Q2: When to use generators?**
+- Large data that doesn't fit in memory
+- Infinite sequences
+- Pipeline of transformations
+
+**Q3: What does `@functools.wraps` do?**
+- Preserves original function metadata (name, docstring)
+- Essential in decorators
+
+**Q4: Context manager use cases?**
+- File operations
+- Database connections
+- Locks and synchronization
+- Temporary state changes
+
+**Q5: Benefits of virtual environments?**
+- Isolated dependencies per project
+- Avoid version conflicts
+- Reproducible environments
+
+## Practice Exercises
+
+```python
+# Exercise 1: Lazy range
+def lazy_range(start, stop):
+    current = start
+    while current < stop:
+        yield current
+        current += 1
+
+# Exercise 2: Timing decorator
+def timer(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"Time: {time.time() - start:.2f}s")
+        return result
+    return wrapper
+
+# Exercise 3: Retry decorator
+def retry(times):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for i in range(times):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if i == times - 1:
+                        raise
+                    print(f"Attempt {i+1} failed: {e}")
+        return wrapper
+    return decorator
+
+@retry(3)
+def unstable_function():
+    import random
+    if random.random() < 0.7:
+        raise ValueError("Random error")
+    return "Success!"
+```
+
+## Key Takeaways
+
+✅ Generators save memory for large datasets
+✅ Decorators modify function behavior elegantly
+✅ Context managers ensure proper cleanup
+✅ Comprehensions create concise, readable code
+✅ Virtual environments isolate project dependencies
+✅ Understanding these makes you interview-ready
+
+**Part 8** covers algorithms and interview patterns!

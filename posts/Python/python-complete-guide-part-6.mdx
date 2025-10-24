@@ -1,0 +1,482 @@
+---
+title: "Python from A to Z: Part 6 - Object-Oriented Programming"
+description: "Master Python OOP: classes, objects, inheritance, polymorphism, encapsulation, and magic methods. Build robust, maintainable code for technical interviews."
+date: "2025-10-24"
+author: "Goutham"
+tags: ["Python", "OOP", "Classes", "Inheritance", "Coding Interviews"]
+image: "/images/python-oop.svg"
+readTime: "20 min read"
+---
+
+# Python from A to Z: Part 6 - Object-Oriented Programming
+
+OOP organizes code into reusable blueprints (classes). Essential for system design interviews!
+
+## Classes and Objects
+
+```python
+# Define a class
+class Dog:
+    # Class attribute (shared by all instances)
+    species = "Canis familiaris"
+
+    # Constructor
+    def __init__(self, name, age):
+        # Instance attributes (unique to each instance)
+        self.name = name
+        self.age = age
+
+    # Instance method
+    def bark(self):
+        return f"{self.name} says woof!"
+
+    # Instance method with parameters
+    def description(self):
+        return f"{self.name} is {self.age} years old"
+
+# Create objects (instances)
+dog1 = Dog("Buddy", 3)
+dog2 = Dog("Max", 5)
+
+print(dog1.bark())  # "Buddy says woof!"
+print(dog2.description())  # "Max is 5 years old"
+print(Dog.species)  # "Canis familiaris"
+```
+
+## The `__init__` Constructor
+
+```python
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+        self.friends = []  # Initialize empty list
+
+person = Person("Alice", 25)
+print(person.name)  # "Alice"
+```
+
+## Instance vs Class Variables
+
+```python
+class Employee:
+    company = "TechCorp"  # Class variable (shared)
+    num_employees = 0
+
+    def __init__(self, name, salary):
+        self.name = name  # Instance variable (unique)
+        self.salary = salary
+        Employee.num_employees += 1
+
+emp1 = Employee("Alice", 80000)
+emp2 = Employee("Bob", 90000)
+
+print(emp1.company)  # "TechCorp"
+print(Employee.num_employees)  # 2
+```
+
+## Methods
+
+### Instance Methods
+
+```python
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):  # Instance method (uses self)
+        return 3.14 * self.radius ** 2
+
+circle = Circle(5)
+print(circle.area())  # 78.5
+```
+
+### Class Methods
+
+```python
+class Date:
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+    @classmethod
+    def from_string(cls, date_str):  # Alternative constructor
+        year, month, day = map(int, date_str.split("-"))
+        return cls(year, month, day)  # Return new instance
+
+date1 = Date(2025, 1, 15)
+date2 = Date.from_string("2025-10-24")  # Using class method
+```
+
+### Static Methods
+
+```python
+class Math:
+    @staticmethod
+    def add(a, b):  # No self or cls
+        return a + b
+
+    @staticmethod
+    def is_even(n):
+        return n % 2 == 0
+
+print(Math.add(5, 3))  # 8
+print(Math.is_even(10))  # True
+```
+
+## Inheritance
+
+```python
+# Parent class (base class)
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        pass  # To be implemented by child classes
+
+# Child class (derived class)
+class Dog(Animal):
+    def speak(self):
+        return f"{self.name} barks"
+
+class Cat(Animal):
+    def speak(self):
+        return f"{self.name} meows"
+
+dog = Dog("Buddy")
+cat = Cat("Whiskers")
+
+print(dog.speak())  # "Buddy barks"
+print(cat.speak())  # "Whiskers meows"
+```
+
+### `super()` Function
+
+```python
+class Animal:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+class Dog(Animal):
+    def __init__(self, name, age, breed):
+        super().__init__(name, age)  # Call parent constructor
+        self.breed = breed
+
+dog = Dog("Buddy", 3, "Golden Retriever")
+print(dog.name, dog.age, dog.breed)
+```
+
+### Multiple Inheritance
+
+```python
+class Flyer:
+    def fly(self):
+        return "Flying"
+
+class Swimmer:
+    def swim(self):
+        return "Swimming"
+
+class Duck(Flyer, Swimmer):  # Multiple inheritance
+    pass
+
+duck = Duck()
+print(duck.fly())   # "Flying"
+print(duck.swim())  # "Swimming"
+```
+
+## Polymorphism
+
+```python
+# Same method name, different behavior
+class Shape:
+    def area(self):
+        pass
+
+class Rectangle(Shape):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def area(self):
+        return self.width * self.height
+
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return 3.14 * self.radius ** 2
+
+# Polymorphism in action
+shapes = [Rectangle(5, 10), Circle(7)]
+for shape in shapes:
+    print(shape.area())  # Calls appropriate method
+```
+
+## Encapsulation
+
+### Private Attributes
+
+```python
+class BankAccount:
+    def __init__(self, balance):
+        self.__balance = balance  # Private (name mangling)
+
+    def deposit(self, amount):
+        if amount > 0:
+            self.__balance += amount
+
+    def get_balance(self):
+        return self.__balance
+
+account = BankAccount(1000)
+# print(account.__balance)  # AttributeError!
+print(account.get_balance())  # 1000
+account.deposit(500)
+print(account.get_balance())  # 1500
+```
+
+### Property Decorators
+
+```python
+class Temperature:
+    def __init__(self, celsius):
+        self._celsius = celsius
+
+    @property
+    def fahrenheit(self):  # Getter
+        return self._celsius * 9/5 + 32
+
+    @fahrenheit.setter
+    def fahrenheit(self, value):  # Setter
+        self._celsius = (value - 32) * 5/9
+
+temp = Temperature(0)
+print(temp.fahrenheit)  # 32.0
+temp.fahrenheit = 98.6
+print(temp._celsius)  # 37.0
+```
+
+## Magic Methods (Dunder Methods)
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):  # For print()
+        return f"Point({self.x}, {self.y})"
+
+    def __repr__(self):  # For representation
+        return f"Point(x={self.x}, y={self.y})"
+
+    def __add__(self, other):  # For +
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __eq__(self, other):  # For ==
+        return self.x == other.x and self.y == other.y
+
+    def __len__(self):  # For len()
+        return int((self.x**2 + self.y**2)**0.5)
+
+p1 = Point(1, 2)
+p2 = Point(3, 4)
+
+print(p1)  # "Point(1, 2)"
+p3 = p1 + p2  # Point(4, 6)
+print(p1 == p2)  # False
+```
+
+### Common Magic Methods
+
+```python
+__init__    # Constructor
+__str__     # Informal string representation
+__repr__    # Official string representation
+__len__     # Length
+__getitem__ # Indexing (obj[key])
+__setitem__ # Assignment (obj[key] = value)
+__add__     # Addition (+)
+__sub__     # Subtraction (-)
+__mul__     # Multiplication (*)
+__eq__      # Equality (==)
+__lt__      # Less than (<)
+__call__    # Make object callable
+```
+
+## Abstract Classes
+
+```python
+from abc import ABC, abstractmethod
+
+class Shape(ABC):  # Abstract base class
+    @abstractmethod
+    def area(self):
+        pass
+
+    @abstractmethod
+    def perimeter(self):
+        pass
+
+# Cannot instantiate abstract class
+# shape = Shape()  # TypeError!
+
+class Rectangle(Shape):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def area(self):
+        return self.width * self.height
+
+    def perimeter(self):
+        return 2 * (self.width + self.height)
+
+rect = Rectangle(5, 10)
+print(rect.area())  # 50
+```
+
+## Design Patterns Examples
+
+### Singleton Pattern
+
+```python
+class Singleton:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+s1 = Singleton()
+s2 = Singleton()
+print(s1 is s2)  # True (same instance)
+```
+
+### Factory Pattern
+
+```python
+class Dog:
+    def speak(self):
+        return "Woof!"
+
+class Cat:
+    def speak(self):
+        return "Meow!"
+
+class AnimalFactory:
+    @staticmethod
+    def create_animal(animal_type):
+        if animal_type == "dog":
+            return Dog()
+        elif animal_type == "cat":
+            return Cat()
+
+animal = AnimalFactory.create_animal("dog")
+print(animal.speak())  # "Woof!"
+```
+
+## Practice Exercises
+
+```python
+# Exercise 1: Library System
+class Book:
+    def __init__(self, title, author, isbn):
+        self.title = title
+        self.author = author
+        self.isbn = isbn
+        self.available = True
+
+class Library:
+    def __init__(self):
+        self.books = []
+
+    def add_book(self, book):
+        self.books.append(book)
+
+    def find_book(self, isbn):
+        for book in self.books:
+            if book.isbn == isbn:
+                return book
+        return None
+
+# Exercise 2: Stack Implementation
+class Stack:
+    def __init__(self):
+        self.items = []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        if not self.is_empty():
+            return self.items.pop()
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+    def peek(self):
+        if not self.is_empty():
+            return self.items[-1]
+
+# Exercise 3: Bank Account with History
+class BankAccount:
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.__balance = balance
+        self.transactions = []
+
+    def deposit(self, amount):
+        self.__balance += amount
+        self.transactions.append(f"Deposit: +{amount}")
+
+    def withdraw(self, amount):
+        if amount <= self.__balance:
+            self.__balance -= amount
+            self.transactions.append(f"Withdraw: -{amount}")
+        else:
+            print("Insufficient funds")
+
+    def get_balance(self):
+        return self.__balance
+```
+
+## Interview Questions
+
+**Q1: Difference between class and instance variables?**
+- Class: shared by all instances
+- Instance: unique to each instance
+
+**Q2: What is `self`?**
+- Reference to current instance
+- Must be first parameter in instance methods
+
+**Q3: Public vs Private attributes?**
+- Public: accessible everywhere
+- Private (`__`): name mangling, harder to access
+
+**Q4: `__str__` vs `__repr__`?**
+- `__str__`: user-friendly string (print)
+- `__repr__`: developer-friendly (debugging)
+
+**Q5: When to use class methods vs static methods?**
+- Class methods: need access to class (cls)
+- Static methods: no access to class or instance
+
+## Key Takeaways
+
+✅ Classes are blueprints, objects are instances
+✅ `__init__` initializes object state
+✅ Inheritance promotes code reuse
+✅ Polymorphism enables flexible code
+✅ Encapsulation protects data
+✅ Magic methods customize behavior
+✅ Know common design patterns
+
+**Part 7** covers advanced Python concepts!

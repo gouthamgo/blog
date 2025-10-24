@@ -1,0 +1,747 @@
+---
+title: "Python from A to Z: Part 3 - Functions and Functional Programming"
+description: "Master Python functions from basics to advanced: built-ins, user-defined, lambda, recursion, decorators, and functional programming patterns for coding interviews."
+date: "2025-10-24"
+author: "Goutham"
+tags: ["Python", "Functions", "Recursion", "Lambda", "Coding Interviews"]
+image: "/images/python-functions.svg"
+readTime: "20 min read"
+---
+
+# Python from A to Z: Part 3 - Functions and Functional Programming
+
+Welcome to Part 3! Functions are the building blocks of reusable code. You'll learn to write clean, efficient functions that are essential for coding interviews.
+
+## What is a Function?
+
+A function is a reusable block of code that performs a specific task.
+
+**Why use functions?**
+- **Reusability**: Write once, use many times
+- **Organization**: Break complex problems into smaller parts
+- **Maintainability**: Easier to update and debug
+- **Testing**: Test individual pieces independently
+
+## Built-in Functions
+
+Python provides many ready-to-use functions.
+
+```python
+# Common built-in functions
+print("Hello")          # Output to console
+len([1, 2, 3])         # Length: 3
+type(42)               # <class 'int'>
+int("10")              # Convert to integer: 10
+str(100)               # Convert to string: "100"
+max(1, 5, 3)           # Maximum: 5
+min([2, 8, 1])         # Minimum: 1
+sum([1, 2, 3, 4])      # Sum: 10
+abs(-42)               # Absolute value: 42
+round(3.14159, 2)      # Round to 2 decimals: 3.14
+pow(2, 3)              # Power: 8
+sorted([3, 1, 2])      # Returns sorted list: [1, 2, 3]
+reversed([1, 2, 3])    # Returns reverse iterator
+
+# Type checking
+isinstance(42, int)     # True
+isinstance("hi", str)   # True
+isinstance(3.14, float) # True
+```
+
+### Essential Built-ins for Interviews
+
+```python
+# range() - generate sequences
+list(range(5))           # [0, 1, 2, 3, 4]
+list(range(2, 8))        # [2, 3, 4, 5, 6, 7]
+list(range(0, 10, 2))    # [0, 2, 4, 6, 8]
+
+# zip() - combine iterables
+names = ["Alice", "Bob", "Charlie"]
+scores = [85, 92, 78]
+combined = list(zip(names, scores))
+# [('Alice', 85), ('Bob', 92), ('Charlie', 78)]
+
+# enumerate() - get index and value
+for i, name in enumerate(names):
+    print(f"{i}: {name}")
+
+# map() - apply function to each element
+numbers = [1, 2, 3, 4]
+squared = list(map(lambda x: x**2, numbers))
+# [1, 4, 9, 16]
+
+# filter() - keep elements that satisfy condition
+even_numbers = list(filter(lambda x: x % 2 == 0, numbers))
+# [2, 4]
+
+# any() and all()
+print(any([False, False, True]))   # True (at least one True)
+print(all([True, True, True]))     # True (all True)
+print(all([True, False, True]))    # False
+```
+
+## Defining Your Own Functions
+
+### Basic Syntax
+
+```python
+def function_name(parameters):
+    """Docstring: describes what function does"""
+    # Function body
+    return value  # Optional
+
+# Example: Simple function
+def greet():
+    print("Hello, World!")
+
+greet()  # Call the function
+
+# Example: Function with parameter
+def greet_person(name):
+    print(f"Hello, {name}!")
+
+greet_person("Alice")  # Hello, Alice!
+
+# Example: Function with return value
+def add(a, b):
+    return a + b
+
+result = add(5, 3)  # result = 8
+```
+
+### Function Parameters
+
+#### 1. Positional Parameters
+
+```python
+def calculate_area(length, width):
+    return length * width
+
+area = calculate_area(5, 3)  # 15
+# Order matters!
+```
+
+#### 2. Default Parameters
+
+```python
+def greet(name, message="Hello"):
+    print(f"{message}, {name}!")
+
+greet("Alice")              # Hello, Alice!
+greet("Bob", "Hi")          # Hi, Bob!
+greet("Charlie", message="Hey")  # Hey, Charlie!
+
+# Interview Tip: Default parameters must come AFTER positional ones
+# ❌ Wrong
+# def func(a=1, b):  # SyntaxError
+#     pass
+
+# ✅ Correct
+def func(b, a=1):
+    pass
+```
+
+#### 3. Keyword Arguments
+
+```python
+def person_info(name, age, city):
+    print(f"{name}, {age}, from {city}")
+
+# Call with keyword arguments (order doesn't matter)
+person_info(age=25, name="Alice", city="NYC")
+person_info(city="LA", name="Bob", age=30)
+
+# Mix positional and keyword (positional first!)
+person_info("Charlie", age=35, city="SF")
+```
+
+#### 4. *args (Variable Positional Arguments)
+
+```python
+def sum_all(*numbers):
+    """Accept any number of arguments"""
+    total = 0
+    for num in numbers:
+        total += num
+    return total
+
+print(sum_all(1, 2, 3))           # 6
+print(sum_all(1, 2, 3, 4, 5))     # 15
+
+# *args packs arguments into tuple
+def print_args(*args):
+    print(type(args))  # <class 'tuple'>
+    print(args)
+
+print_args(1, 2, 3)  # (1, 2, 3)
+```
+
+#### 5. **kwargs (Variable Keyword Arguments)
+
+```python
+def print_info(**kwargs):
+    """Accept any number of keyword arguments"""
+    for key, value in kwargs.items():
+        print(f"{key}: {value}")
+
+print_info(name="Alice", age=25, city="NYC")
+# name: Alice
+# age: 25
+# city: NYC
+
+# **kwargs packs arguments into dictionary
+def show_kwargs(**kwargs):
+    print(type(kwargs))  # <class 'dict'>
+    print(kwargs)
+
+show_kwargs(x=1, y=2)  # {'x': 1, 'y': 2}
+```
+
+#### 6. Combining All Parameter Types
+
+```python
+def complex_func(a, b, c=10, *args, **kwargs):
+    """Order: positional, default, *args, **kwargs"""
+    print(f"a={a}, b={b}, c={c}")
+    print(f"args={args}")
+    print(f"kwargs={kwargs}")
+
+complex_func(1, 2)
+# a=1, b=2, c=10
+# args=()
+# kwargs={}
+
+complex_func(1, 2, 3, 4, 5, x=100, y=200)
+# a=1, b=2, c=3
+# args=(4, 5)
+# kwargs={'x': 100, 'y': 200}
+```
+
+### Return Values
+
+```python
+# Single return value
+def square(x):
+    return x ** 2
+
+# Multiple return values (returns tuple)
+def get_stats(numbers):
+    return min(numbers), max(numbers), sum(numbers)
+
+minimum, maximum, total = get_stats([1, 2, 3, 4, 5])
+print(f"Min: {minimum}, Max: {maximum}, Sum: {total}")
+
+# Return None explicitly (or implicitly)
+def no_return():
+    print("This function returns None")
+    return  # Explicit None
+
+result = no_return()  # result is None
+
+# Early return (common pattern)
+def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False
+
+# Even better (direct return)
+def is_even(n):
+    return n % 2 == 0
+```
+
+## Lambda Functions
+
+Anonymous (unnamed) functions for simple operations.
+
+```python
+# Regular function
+def square(x):
+    return x ** 2
+
+# Lambda equivalent (one-liner)
+square = lambda x: x ** 2
+
+print(square(5))  # 25
+
+# Lambda with multiple parameters
+add = lambda x, y: x + y
+print(add(3, 4))  # 7
+
+# Common use: with map(), filter(), sorted()
+numbers = [1, 2, 3, 4, 5]
+
+# Square all numbers
+squared = list(map(lambda x: x**2, numbers))
+# [1, 4, 9, 16, 25]
+
+# Filter even numbers
+evens = list(filter(lambda x: x % 2 == 0, numbers))
+# [2, 4]
+
+# Sort by absolute distance from 3
+sorted_nums = sorted(numbers, key=lambda x: abs(x - 3))
+# [3, 2, 4, 1, 5]
+
+# Sort list of tuples by second element
+pairs = [(1, 'b'), (2, 'a'), (3, 'c')]
+sorted_pairs = sorted(pairs, key=lambda x: x[1])
+# [(2, 'a'), (1, 'b'), (3, 'c')]
+```
+
+**When to use Lambda**:
+- ✅ Simple, one-line operations
+- ✅ Short-lived use (as argument to another function)
+- ❌ Complex logic (use regular function)
+- ❌ Need docstring or multiple statements
+
+## Scope and Namespaces
+
+### Local vs Global Scope
+
+```python
+# Global variable
+x = 10
+
+def my_function():
+    # Local variable
+    x = 5
+    print(f"Inside function: {x}")  # 5
+
+my_function()
+print(f"Outside function: {x}")  # 10 (global unchanged)
+
+# Accessing global variable
+y = 20
+
+def read_global():
+    print(y)  # Can read global
+
+read_global()  # 20
+
+# Modifying global variable
+z = 30
+
+def modify_global():
+    global z  # Declare we're using global z
+    z = 40
+
+modify_global()
+print(z)  # 40 (global modified)
+```
+
+### LEGB Rule (Scope Resolution)
+
+**L**ocal → **E**nclosing → **G**lobal → **B**uilt-in
+
+```python
+x = "global"
+
+def outer():
+    x = "enclosing"
+
+    def inner():
+        x = "local"
+        print(x)  # "local" (L)
+
+    inner()
+    print(x)  # "enclosing" (E)
+
+outer()
+print(x)  # "global" (G)
+
+# Built-in scope (B)
+print(len([1, 2, 3]))  # len is built-in
+```
+
+**Interview Tip**: Avoid modifying global variables. Pass and return values instead.
+
+## Recursion
+
+A function calling itself.
+
+### Basic Recursion
+
+```python
+# Factorial: n! = n × (n-1)!
+def factorial(n):
+    # Base case: stop recursion
+    if n == 0 or n == 1:
+        return 1
+    # Recursive case
+    return n * factorial(n - 1)
+
+print(factorial(5))  # 120
+# Call stack:
+# factorial(5) = 5 * factorial(4)
+# factorial(4) = 4 * factorial(3)
+# factorial(3) = 3 * factorial(2)
+# factorial(2) = 2 * factorial(1)
+# factorial(1) = 1
+# Result: 5 * 4 * 3 * 2 * 1 = 120
+```
+
+### Fibonacci Sequence
+
+```python
+# Fibonacci: F(n) = F(n-1) + F(n-2)
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+# First 10 Fibonacci numbers
+for i in range(10):
+    print(fibonacci(i), end=" ")
+# 0 1 1 2 3 5 8 13 21 34
+```
+
+**Warning**: Simple recursion can be inefficient!
+```python
+# ❌ Exponential time complexity O(2^n)
+fibonacci(30)  # Takes noticeable time
+
+# ✅ Optimized with memoization
+def fib_memo(n, memo={}):
+    if n in memo:
+        return memo[n]
+    if n <= 1:
+        return n
+    memo[n] = fib_memo(n-1, memo) + fib_memo(n-2, memo)
+    return memo[n]
+
+print(fib_memo(100))  # Instant!
+```
+
+### Common Recursive Patterns
+
+#### 1. Sum of List
+
+```python
+def sum_list(lst):
+    if not lst:  # Empty list
+        return 0
+    return lst[0] + sum_list(lst[1:])
+
+print(sum_list([1, 2, 3, 4, 5]))  # 15
+```
+
+#### 2. Reverse String
+
+```python
+def reverse(s):
+    if len(s) <= 1:
+        return s
+    return reverse(s[1:]) + s[0]
+
+print(reverse("hello"))  # "olleh"
+```
+
+#### 3. Binary Search (Recursive)
+
+```python
+def binary_search(arr, target, left, right):
+    if left > right:
+        return -1  # Not found
+
+    mid = (left + right) // 2
+
+    if arr[mid] == target:
+        return mid
+    elif arr[mid] > target:
+        return binary_search(arr, target, left, mid - 1)
+    else:
+        return binary_search(arr, target, mid + 1, right)
+
+arr = [1, 3, 5, 7, 9, 11]
+print(binary_search(arr, 7, 0, len(arr) - 1))  # Index 3
+```
+
+**Recursion vs Iteration**:
+- Recursion: Elegant, good for tree/graph problems
+- Iteration: Usually faster, less memory
+- Interview: Know both approaches!
+
+## Function Best Practices
+
+### 1. Single Responsibility
+
+```python
+# ❌ Function does too much
+def process_user(data):
+    # Validates
+    # Saves to database
+    # Sends email
+    # Generates report
+    pass
+
+# ✅ Each function has one job
+def validate_user(data):
+    pass
+
+def save_user(data):
+    pass
+
+def send_welcome_email(user):
+    pass
+```
+
+### 2. Meaningful Names
+
+```python
+# ❌ Vague names
+def calc(a, b):
+    return a + b
+
+# ✅ Descriptive names
+def calculate_total_price(price, tax):
+    return price + tax
+```
+
+### 3. Docstrings
+
+```python
+def calculate_bmi(weight, height):
+    """
+    Calculate Body Mass Index.
+
+    Args:
+        weight (float): Weight in kilograms
+        height (float): Height in meters
+
+    Returns:
+        float: BMI value
+
+    Example:
+        >>> calculate_bmi(70, 1.75)
+        22.86
+    """
+    return weight / (height ** 2)
+
+# Access docstring
+print(calculate_bmi.__doc__)
+help(calculate_bmi)
+```
+
+### 4. Type Hints (Python 3.5+)
+
+```python
+def greet(name: str, age: int) -> str:
+    """Type hints for better code clarity"""
+    return f"{name} is {age} years old"
+
+def add_numbers(a: int, b: int) -> int:
+    return a + b
+
+# Type hints don't enforce types, but IDEs use them
+result = add_numbers("1", "2")  # No error, but IDE warning
+```
+
+## Higher-Order Functions
+
+Functions that take functions as arguments or return functions.
+
+```python
+# Function as argument
+def apply_operation(x, y, operation):
+    return operation(x, y)
+
+def add(a, b):
+    return a + b
+
+def multiply(a, b):
+    return a * b
+
+print(apply_operation(5, 3, add))       # 8
+print(apply_operation(5, 3, multiply))  # 15
+
+# Function returning function
+def create_multiplier(n):
+    def multiplier(x):
+        return x * n
+    return multiplier
+
+double = create_multiplier(2)
+triple = create_multiplier(3)
+
+print(double(10))  # 20
+print(triple(10))  # 30
+```
+
+## Decorators (Introduction)
+
+Modify function behavior without changing its code.
+
+```python
+# Simple decorator
+def uppercase_decorator(func):
+    def wrapper():
+        result = func()
+        return result.upper()
+    return wrapper
+
+@uppercase_decorator
+def greet():
+    return "hello world"
+
+print(greet())  # "HELLO WORLD"
+
+# Decorator with arguments
+def repeat(times):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for _ in range(times):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def say_hello():
+    print("Hello!")
+
+say_hello()
+# Hello!
+# Hello!
+# Hello!
+```
+
+## Practice Exercises
+
+### Exercise 1: Prime Checker
+```python
+def is_prime(n):
+    """Check if number is prime"""
+    if n < 2:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+# Test
+print(is_prime(17))  # True
+print(is_prime(20))  # False
+```
+
+### Exercise 2: Palindrome Checker
+```python
+def is_palindrome(s):
+    """Check if string is palindrome (reads same backwards)"""
+    s = s.lower().replace(" ", "")
+    return s == s[::-1]
+
+# Test
+print(is_palindrome("racecar"))       # True
+print(is_palindrome("A man a plan a canal Panama"))  # True
+```
+
+### Exercise 3: Factorial (Iterative)
+```python
+def factorial_iterative(n):
+    """Calculate factorial without recursion"""
+    result = 1
+    for i in range(1, n + 1):
+        result *= i
+    return result
+
+print(factorial_iterative(5))  # 120
+```
+
+### Exercise 4: Count Vowels
+```python
+def count_vowels(text):
+    """Count number of vowels in text"""
+    vowels = "aeiouAEIOU"
+    count = 0
+    for char in text:
+        if char in vowels:
+            count += 1
+    return count
+
+# Or using sum and lambda
+def count_vowels_v2(text):
+    return sum(1 for char in text if char.lower() in 'aeiou')
+
+print(count_vowels("Hello World"))  # 3
+```
+
+## Interview Questions - Part 3
+
+### Q1: Difference between parameters and arguments?
+**Answer**:
+- **Parameters**: Variables in function definition
+- **Arguments**: Values passed when calling function
+
+```python
+def add(a, b):  # a, b are parameters
+    return a + b
+
+add(5, 3)  # 5, 3 are arguments
+```
+
+### Q2: What is *args and **kwargs?
+**Answer**:
+- `*args`: Variable number of positional arguments (tuple)
+- `**kwargs`: Variable number of keyword arguments (dict)
+
+```python
+def func(*args, **kwargs):
+    print(args)    # (1, 2, 3)
+    print(kwargs)  # {'x': 10, 'y': 20}
+
+func(1, 2, 3, x=10, y=20)
+```
+
+### Q3: Can functions return multiple values?
+**Answer**: Yes, as a tuple (unpacked automatically).
+
+```python
+def get_min_max(numbers):
+    return min(numbers), max(numbers)
+
+minimum, maximum = get_min_max([1, 5, 3])
+```
+
+### Q4: What's a closure?
+**Answer**: Function that remembers variables from enclosing scope.
+
+```python
+def outer(x):
+    def inner(y):
+        return x + y  # Remembers x
+    return inner
+
+add_5 = outer(5)
+print(add_5(3))  # 8
+```
+
+### Q5: Recursion vs Iteration?
+**Answer**:
+| Aspect | Recursion | Iteration |
+|--------|-----------|-----------|
+| Memory | More (call stack) | Less |
+| Speed | Usually slower | Usually faster |
+| Code | Often cleaner | Can be verbose |
+| Use Case | Trees, graphs | Linear problems |
+
+## Key Takeaways
+
+✅ Functions make code reusable and organized
+✅ Use descriptive names and docstrings
+✅ Master *args and **kwargs for flexible functions
+✅ Lambda for simple, one-line operations
+✅ Recursion needs base case to stop
+✅ Understand scope: local, enclosing, global, built-in
+✅ Higher-order functions take/return functions
+
+## What's Next?
+
+In **Part 4**, we'll dive deep into:
+- Lists: methods, slicing, comprehensions
+- Tuples: immutability and use cases
+- Sets: operations and applications
+- Dictionaries: key-value pairs and methods
+- Data structure selection for interviews
+
+See you in Part 4! 🐍

@@ -1,0 +1,709 @@
+---
+title: "Python from A to Z: Part 1 - Getting Started with Python Basics"
+description: "Your complete beginner's guide to Python programming. Learn variables, data types, operators, and input/output from scratch with practical examples and exercises."
+date: "2025-10-24"
+author: "Goutham"
+tags: ["Python", "Programming", "Beginner", "Tutorial", "Coding Interviews"]
+image: "/images/python-basics.svg"
+readTime: "15 min read"
+---
+
+# Python from A to Z: Part 1 - Getting Started with Python Basics
+
+Welcome to your journey into Python programming! This is Part 1 of our comprehensive series designed to take you from absolute beginner to interview-ready Python developer. No prior programming experience required—we'll build your knowledge step by step.
+
+## Why Python?
+
+Before we dive in, let's understand why Python is an excellent choice:
+
+- **Beginner-friendly**: Clean syntax that reads like English
+- **Industry standard**: Used by Google, Netflix, NASA, and thousands of companies
+- **Versatile**: Web development, data science, AI, automation, and more
+- **In-demand**: One of the most sought-after skills in tech interviews
+
+## Setting Up Your Python Environment
+
+### Installation
+
+**Windows:**
+1. Visit [python.org](https://www.python.org/downloads/)
+2. Download Python 3.11 or later
+3. Run installer and **check "Add Python to PATH"**
+4. Verify: Open Command Prompt and type `python --version`
+
+**Mac:**
+```bash
+# Using Homebrew (recommended)
+brew install python3
+
+# Verify installation
+python3 --version
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3 python3-pip
+
+# Verify
+python3 --version
+```
+
+### Your First Python Program
+
+Open your terminal or Command Prompt and type:
+```bash
+python3
+```
+
+You'll see the Python interactive shell (REPL). Try this:
+```python
+>>> print("Hello, Python!")
+Hello, Python!
+```
+
+Congratulations! You've written your first Python code.
+
+## Understanding Variables
+
+### What is a Variable?
+
+Think of a variable as a labeled box that stores information. You can change what's inside the box anytime.
+
+```python
+# Creating variables (no need to declare type!)
+name = "Alice"
+age = 25
+height = 5.6
+is_student = True
+
+# Python automatically determines the type
+print(name)    # Alice
+print(age)     # 25
+```
+
+### Variable Naming Rules
+
+```python
+# ✅ Valid names
+user_name = "Bob"
+user1 = "Charlie"
+_private = "secret"
+firstName = "Dave"  # camelCase (less common in Python)
+
+# ❌ Invalid names
+2users = "error"     # Can't start with number
+user-name = "error"  # Can't use hyphens
+class = "error"      # Can't use Python keywords
+```
+
+**Python Convention**: Use `snake_case` for variables (all lowercase with underscores).
+
+```python
+# Preferred Python style
+user_name = "Alice"
+total_count = 100
+is_valid = True
+```
+
+## Data Types: The Building Blocks
+
+Python has several built-in data types. Let's explore the fundamental ones:
+
+### 1. Integers (int)
+
+Whole numbers without decimal points.
+
+```python
+age = 25
+year = 2025
+negative = -10
+large_number = 1_000_000  # Underscores for readability
+
+print(type(age))  # <class 'int'>
+
+# Integer operations
+sum_result = 10 + 5      # 15
+difference = 10 - 3      # 7
+product = 4 * 5          # 20
+quotient = 20 // 3       # 6 (integer division)
+power = 2 ** 3           # 8 (2 to the power of 3)
+modulus = 10 % 3         # 1 (remainder)
+```
+
+### 2. Floats (float)
+
+Numbers with decimal points.
+
+```python
+price = 19.99
+temperature = -5.5
+scientific = 1.5e-4  # 0.00015 in scientific notation
+
+print(type(price))  # <class 'float'>
+
+# Float operations
+result = 10.5 + 3.2      # 13.7
+division = 10 / 3        # 3.333... (normal division always returns float)
+```
+
+**Interview Tip**: Be careful with floating-point arithmetic!
+```python
+# Floating-point precision issues
+print(0.1 + 0.2)  # 0.30000000000000004 (not exactly 0.3!)
+
+# For exact decimal calculations, use the decimal module
+from decimal import Decimal
+result = Decimal('0.1') + Decimal('0.2')  # Exactly 0.3
+```
+
+### 3. Strings (str)
+
+Text data enclosed in quotes.
+
+```python
+single_quote = 'Hello'
+double_quote = "Hello"
+multiline = """This is a
+multiline string
+across multiple lines"""
+
+# Strings are immutable (can't be changed)
+name = "Python"
+# name[0] = "J"  # ❌ This would cause an error
+
+# String concatenation
+first_name = "John"
+last_name = "Doe"
+full_name = first_name + " " + last_name  # "John Doe"
+
+# String repetition
+laugh = "ha" * 3  # "hahaha"
+
+# String methods (we'll explore more in Part 5)
+message = "hello world"
+print(message.upper())       # "HELLO WORLD"
+print(message.capitalize())  # "Hello world"
+print(message.title())       # "Hello World"
+print(len(message))          # 11 (length of string)
+```
+
+### 4. Booleans (bool)
+
+True or False values.
+
+```python
+is_active = True
+is_logged_in = False
+
+# Boolean results from comparisons
+print(5 > 3)    # True
+print(10 == 5)  # False
+
+# Truthy and Falsy values (important for interviews!)
+# Falsy values: False, 0, 0.0, "", None, [], {}, ()
+# Everything else is Truthy
+
+if 0:
+    print("This won't print")  # 0 is Falsy
+
+if "text":
+    print("This will print")  # Non-empty string is Truthy
+```
+
+### 5. None Type
+
+Represents absence of value (like null in other languages).
+
+```python
+result = None
+
+# Commonly used to initialize variables
+user_name = None
+
+# Check for None
+if user_name is None:
+    print("No user name set")
+
+# Interview Tip: Use 'is' not '==' for None comparison
+if result is None:  # ✅ Correct
+    pass
+
+if result == None:  # ❌ Works but not Pythonic
+    pass
+```
+
+## Type Conversion
+
+Python allows converting between types:
+
+```python
+# String to Integer
+age_string = "25"
+age_int = int(age_string)  # 25
+
+# Integer to String
+number = 100
+text = str(number)  # "100"
+
+# String to Float
+price_string = "19.99"
+price_float = float(price_string)  # 19.99
+
+# Integer to Float
+whole = 5
+decimal = float(whole)  # 5.0
+
+# Float to Integer (truncates, doesn't round!)
+pi = 3.14159
+rounded = int(pi)  # 3 (not 4!)
+
+# For proper rounding, use round()
+properly_rounded = round(pi)  # 3
+```
+
+**Common Interview Pitfall**:
+```python
+# Be careful with invalid conversions
+try:
+    number = int("abc")  # ❌ ValueError!
+except ValueError:
+    print("Can't convert 'abc' to integer")
+
+# Always validate before converting in production code
+user_input = "25"
+if user_input.isdigit():
+    number = int(user_input)
+else:
+    print("Invalid number")
+```
+
+## Operators in Python
+
+### Arithmetic Operators
+
+```python
+a = 10
+b = 3
+
+print(a + b)   # 13 (addition)
+print(a - b)   # 7 (subtraction)
+print(a * b)   # 30 (multiplication)
+print(a / b)   # 3.333... (division, always returns float)
+print(a // b)  # 3 (floor division, returns integer)
+print(a % b)   # 1 (modulus, remainder)
+print(a ** b)  # 1000 (exponentiation, 10^3)
+```
+
+### Comparison Operators
+
+```python
+x = 5
+y = 10
+
+print(x == y)  # False (equal to)
+print(x != y)  # True (not equal to)
+print(x > y)   # False (greater than)
+print(x < y)   # True (less than)
+print(x >= y)  # False (greater than or equal)
+print(x <= y)  # True (less than or equal)
+```
+
+### Logical Operators
+
+```python
+# and: Both conditions must be True
+print(True and True)    # True
+print(True and False)   # False
+
+# or: At least one condition must be True
+print(True or False)    # True
+print(False or False)   # False
+
+# not: Reverses the boolean value
+print(not True)         # False
+print(not False)        # True
+
+# Practical example
+age = 25
+has_license = True
+
+can_drive = age >= 18 and has_license  # True
+
+# Short-circuit evaluation (interview favorite!)
+def expensive_check():
+    print("This function is called")
+    return True
+
+# 'and' stops if first condition is False
+result = False and expensive_check()  # expensive_check NOT called
+print(result)  # False
+
+# 'or' stops if first condition is True
+result = True or expensive_check()  # expensive_check NOT called
+print(result)  # True
+```
+
+### Assignment Operators
+
+```python
+x = 10  # Basic assignment
+
+# Compound assignment operators (shorthand)
+x += 5   # Same as: x = x + 5 → x is now 15
+x -= 3   # Same as: x = x - 3 → x is now 12
+x *= 2   # Same as: x = x * 2 → x is now 24
+x //= 4  # Same as: x = x // 4 → x is now 6
+x %= 5   # Same as: x = x % 5 → x is now 1
+x **= 3  # Same as: x = x ** 3 → x is now 1
+
+# Multiple assignment (Pythonic!)
+a, b, c = 1, 2, 3
+print(a, b, c)  # 1 2 3
+
+# Swap values (interview favorite!)
+x, y = 10, 20
+x, y = y, x  # Swap in one line!
+print(x, y)  # 20 10
+```
+
+### Identity Operators
+
+```python
+# 'is' checks if two variables point to the same object
+a = [1, 2, 3]
+b = a
+c = [1, 2, 3]
+
+print(a is b)      # True (same object)
+print(a is c)      # False (different objects, same content)
+print(a == c)      # True (same content)
+
+# 'is not' checks if two variables DON'T point to same object
+print(a is not c)  # True
+```
+
+### Membership Operators
+
+```python
+# 'in' checks if value exists in sequence
+text = "Python Programming"
+print("Python" in text)     # True
+print("Java" in text)       # False
+
+numbers = [1, 2, 3, 4, 5]
+print(3 in numbers)         # True
+print(10 in numbers)        # False
+
+# 'not in' checks if value doesn't exist
+print("Ruby" not in text)   # True
+```
+
+## Input and Output
+
+### The print() Function
+
+```python
+# Basic printing
+print("Hello, World!")
+
+# Printing multiple values
+name = "Alice"
+age = 25
+print("Name:", name, "Age:", age)  # Name: Alice Age: 25
+
+# Changing separator
+print("Python", "is", "awesome", sep="-")  # Python-is-awesome
+
+# Changing end character (default is newline)
+print("Hello", end=" ")
+print("World")  # Hello World (on same line)
+
+# Formatted strings (f-strings) - Modern Python
+name = "Bob"
+age = 30
+print(f"My name is {name} and I'm {age} years old")
+
+# Expressions inside f-strings
+x = 10
+y = 20
+print(f"The sum of {x} and {y} is {x + y}")
+
+# Formatting numbers
+pi = 3.14159265
+print(f"Pi rounded to 2 decimals: {pi:.2f}")  # 3.14
+```
+
+### The input() Function
+
+```python
+# Reading user input (always returns a string!)
+name = input("What is your name? ")
+print(f"Hello, {name}!")
+
+# Converting input to integer
+age_string = input("How old are you? ")
+age = int(age_string)  # Convert to integer
+print(f"Next year you'll be {age + 1}")
+
+# One-liner conversion
+age = int(input("Enter your age: "))
+
+# Reading multiple values
+# User enters: 10 20 30
+numbers = input("Enter three numbers separated by spaces: ")
+a, b, c = map(int, numbers.split())
+print(f"Sum: {a + b + c}")
+```
+
+**Interview Tip**: Always validate user input!
+```python
+# Safe input handling
+while True:
+    try:
+        age = int(input("Enter your age: "))
+        if age < 0:
+            print("Age cannot be negative!")
+            continue
+        break
+    except ValueError:
+        print("Please enter a valid number!")
+
+print(f"Your age is {age}")
+```
+
+## Comments in Python
+
+```python
+# This is a single-line comment
+
+# You can use comments to explain your code
+age = 25  # Inline comment
+
+"""
+This is a multi-line comment (docstring).
+It can span multiple lines.
+Often used for documentation.
+"""
+
+'''
+You can also use single quotes
+for multi-line comments
+'''
+
+# Interview Tip: Write comments for WHY, not WHAT
+# Bad comment:
+x = 5  # Assigning 5 to x
+
+# Good comment:
+x = 5  # Number of retries before giving up
+```
+
+## Common Pitfalls for Beginners
+
+### 1. Indentation Matters!
+
+```python
+# Python uses indentation to define code blocks
+# ✅ Correct
+if True:
+    print("This is indented")
+    print("This too")
+
+# ❌ Wrong (mixing tabs and spaces)
+# if True:
+#     print("Spaces")
+# 	print("Tab")  # IndentationError!
+
+# Best Practice: Use 4 spaces (not tabs)
+```
+
+### 2. Variable Names Are Case-Sensitive
+
+```python
+name = "Alice"
+Name = "Bob"
+NAME = "Charlie"
+
+print(name)  # Alice
+print(Name)  # Bob
+print(NAME)  # Charlie
+# These are three different variables!
+```
+
+### 3. String Immutability
+
+```python
+message = "Hello"
+# message[0] = "J"  # ❌ TypeError: strings are immutable
+
+# ✅ Create a new string instead
+message = "J" + message[1:]  # "Jello"
+```
+
+### 4. Integer Division vs Float Division
+
+```python
+print(10 / 3)   # 3.333... (float division)
+print(10 // 3)  # 3 (integer/floor division)
+print(10 % 3)   # 1 (modulus/remainder)
+
+# Interview favorite: Check if number is even
+number = 10
+if number % 2 == 0:
+    print("Even")
+```
+
+## Practice Exercises
+
+### Exercise 1: Basic Calculator
+```python
+# Create a simple calculator
+num1 = float(input("Enter first number: "))
+num2 = float(input("Enter second number: "))
+operation = input("Enter operation (+, -, *, /): ")
+
+if operation == "+":
+    result = num1 + num2
+elif operation == "-":
+    result = num1 - num2
+elif operation == "*":
+    result = num1 * num2
+elif operation == "/":
+    if num2 != 0:
+        result = num1 / num2
+    else:
+        result = "Cannot divide by zero"
+else:
+    result = "Invalid operation"
+
+print(f"Result: {result}")
+```
+
+### Exercise 2: Temperature Converter
+```python
+# Convert Celsius to Fahrenheit
+celsius = float(input("Enter temperature in Celsius: "))
+fahrenheit = (celsius * 9/5) + 32
+print(f"{celsius}°C = {fahrenheit}°F")
+
+# Bonus: Convert back
+kelvin = celsius + 273.15
+print(f"{celsius}°C = {kelvin}K")
+```
+
+### Exercise 3: Age Calculator
+```python
+# Calculate age from birth year
+current_year = 2025
+birth_year = int(input("Enter your birth year: "))
+age = current_year - birth_year
+print(f"You are approximately {age} years old")
+
+# Bonus: Calculate days lived (approximate)
+days = age * 365
+print(f"You've lived approximately {days:,} days!")
+```
+
+## Interview Questions - Part 1
+
+### Q1: What's the difference between `=` and `==`?
+**Answer**:
+- `=` is assignment operator (assigns value)
+- `==` is comparison operator (checks equality)
+
+```python
+x = 5      # Assignment: x gets the value 5
+x == 5     # Comparison: Is x equal to 5? Returns True
+```
+
+### Q2: What are mutable vs immutable types?
+**Answer**:
+- **Immutable**: Cannot be changed after creation (int, float, str, tuple)
+- **Mutable**: Can be modified (list, dict, set)
+
+```python
+# Immutable example
+text = "hello"
+# text[0] = "H"  # Error!
+
+# Mutable example
+numbers = [1, 2, 3]
+numbers[0] = 10  # ✅ Works fine
+```
+
+### Q3: How do you swap two variables in Python?
+**Answer**:
+```python
+# Pythonic way (one line)
+a, b = 10, 20
+a, b = b, a
+print(a, b)  # 20 10
+
+# Traditional way (using temp variable)
+a, b = 10, 20
+temp = a
+a = b
+b = temp
+```
+
+### Q4: What will this print?
+```python
+x = 5
+y = 2
+print(x / y)
+print(x // y)
+print(x % y)
+```
+**Answer**:
+- `2.5` (float division)
+- `2` (integer division)
+- `1` (remainder)
+
+## Key Takeaways
+
+✅ Variables store data and don't need type declarations
+✅ Python has 5 main primitive types: int, float, str, bool, None
+✅ Use `snake_case` for variable names
+✅ `input()` always returns a string—convert as needed
+✅ f-strings are the modern way to format output
+✅ Indentation matters in Python
+✅ Comments explain WHY, not WHAT
+
+## What's Next?
+
+In **Part 2**, we'll dive into:
+- Conditional statements (if, elif, else)
+- Loops (for and while)
+- Pattern matching (match-case)
+- Break, continue, and pass statements
+- Nested loops and loop patterns
+
+---
+
+**Practice Challenge**: Before moving to Part 2, write a program that:
+1. Asks for user's name
+2. Asks for their age
+3. Calculates birth year
+4. Prints a formatted message with all the information
+
+Try it yourself before checking the solution!
+
+**Solution**:
+```python
+name = input("Enter your name: ")
+age = int(input("Enter your age: "))
+current_year = 2025
+birth_year = current_year - age
+
+print(f"""
+=== User Information ===
+Name: {name}
+Age: {age}
+Birth Year: {birth_year}
+========================
+""")
+```
+
+Keep practicing, and see you in Part 2! 🐍

@@ -1,0 +1,621 @@
+---
+title: "Python from A to Z: Part 4 - Data Structures Deep Dive"
+description: "Master Python's core data structures: lists, tuples, sets, and dictionaries. Learn operations, methods, and when to use each for optimal interview performance."
+date: "2025-10-24"
+author: "Goutham"
+tags: ["Python", "Data Structures", "Lists", "Dictionaries", "Coding Interviews"]
+image: "/images/python-data-structures.svg"
+readTime: "22 min read"
+---
+
+# Python from A to Z: Part 4 - Data Structures Deep Dive
+
+Data structures are how we organize and store data efficiently. Mastering them is crucial for coding interviews!
+
+## Lists: Ordered, Mutable Collections
+
+### Creating Lists
+
+```python
+# Empty list
+empty = []
+also_empty = list()
+
+# List with elements
+numbers = [1, 2, 3, 4, 5]
+mixed = [1, "hello", 3.14, True]  # Can mix types
+nested = [[1, 2], [3, 4], [5, 6]]
+
+# List from string
+chars = list("hello")  # ['h', 'e', 'l', 'l', 'o']
+
+# List from range
+nums = list(range(1, 6))  # [1, 2, 3, 4, 5]
+```
+
+### Indexing and Slicing
+
+```python
+fruits = ["apple", "banana", "cherry", "date", "elderberry"]
+
+# Positive indexing
+print(fruits[0])    # "apple" (first)
+print(fruits[2])    # "cherry"
+
+# Negative indexing (from end)
+print(fruits[-1])   # "elderberry" (last)
+print(fruits[-2])   # "date" (second from end)
+
+# Slicing: [start:stop:step]
+print(fruits[1:4])      # ['banana', 'cherry', 'date']
+print(fruits[:3])       # ['apple', 'banana', 'cherry'] (start from 0)
+print(fruits[2:])       # ['cherry', 'date', 'elderberry'] (to end)
+print(fruits[::2])      # ['apple', 'cherry', 'elderberry'] (every 2nd)
+print(fruits[::-1])     # Reverse: ['elderberry', 'date', 'cherry', 'banana', 'apple']
+
+# Modifying via slicing
+fruits[1:3] = ["blueberry", "coconut"]
+print(fruits)  # ['apple', 'blueberry', 'coconut', 'date', 'elderberry']
+```
+
+### Essential List Methods
+
+```python
+numbers = [1, 2, 3]
+
+# append() - add to end
+numbers.append(4)  # [1, 2, 3, 4]
+
+# extend() - add multiple elements
+numbers.extend([5, 6])  # [1, 2, 3, 4, 5, 6]
+
+# insert() - add at position
+numbers.insert(0, 0)  # [0, 1, 2, 3, 4, 5, 6]
+
+# remove() - remove first occurrence
+numbers.remove(3)  # [0, 1, 2, 4, 5, 6]
+
+# pop() - remove and return (default: last element)
+last = numbers.pop()  # 6, list is [0, 1, 2, 4, 5]
+first = numbers.pop(0)  # 0, list is [1, 2, 4, 5]
+
+# clear() - remove all
+numbers.clear()  # []
+
+# index() - find position
+fruits = ["apple", "banana", "cherry"]
+pos = fruits.index("banana")  # 1
+
+# count() - count occurrences
+nums = [1, 2, 2, 3, 2, 4]
+print(nums.count(2))  # 3
+
+# sort() - sort in place
+nums.sort()  # [1, 2, 2, 2, 3, 4]
+nums.sort(reverse=True)  # [4, 3, 2, 2, 2, 1]
+
+# sorted() - return new sorted list
+original = [3, 1, 4, 1, 5]
+new_sorted = sorted(original)  # [1, 1, 3, 4, 5]
+# original unchanged
+
+# reverse() - reverse in place
+nums.reverse()  # [1, 2, 2, 2, 3, 4]
+
+# copy() - shallow copy
+original = [1, 2, 3]
+copy = original.copy()
+copy[0] = 99
+print(original)  # [1, 2, 3] (unchanged)
+```
+
+### List Comprehensions (Advanced)
+
+```python
+# Basic: [expression for item in iterable]
+squares = [x**2 for x in range(1, 6)]  # [1, 4, 9, 16, 25]
+
+# With condition: [expression for item in iterable if condition]
+evens = [x for x in range(1, 11) if x % 2 == 0]  # [2, 4, 6, 8, 10]
+
+# Expression with condition
+labels = ["even" if x % 2 == 0 else "odd" for x in range(5)]
+# ['even', 'odd', 'even', 'odd', 'even']
+
+# Nested comprehension
+matrix = [[i*j for j in range(1, 4)] for i in range(1, 4)]
+# [[1, 2, 3], [2, 4, 6], [3, 6, 9]]
+
+# Flatten nested list
+nested = [[1, 2], [3, 4], [5, 6]]
+flat = [item for sublist in nested for item in sublist]
+# [1, 2, 3, 4, 5, 6]
+```
+
+### Common List Patterns
+
+```python
+# Remove duplicates (preserves order)
+nums = [1, 2, 2, 3, 3, 3, 4]
+unique = []
+for num in nums:
+    if num not in unique:
+        unique.append(num)
+# [1, 2, 3, 4]
+
+# Or using dict.fromkeys() (faster)
+unique = list(dict.fromkeys(nums))
+
+# Find max/min with index
+numbers = [10, 5, 20, 15]
+max_val = max(numbers)
+max_idx = numbers.index(max_val)  # 2
+
+# Two lists to dictionary
+keys = ["name", "age", "city"]
+values = ["Alice", 25, "NYC"]
+person = dict(zip(keys, values))
+# {'name': 'Alice', 'age': 25, 'city': 'NYC'}
+```
+
+## Tuples: Ordered, Immutable Collections
+
+### Creating Tuples
+
+```python
+# Parentheses (optional but recommended)
+point = (3, 4)
+rgb = (255, 128, 0)
+
+# Without parentheses (tuple packing)
+coordinates = 10, 20, 30
+
+# Single element (comma required!)
+single = (5,)  # Tuple
+not_tuple = (5)  # Int, not tuple!
+
+# Empty tuple
+empty = ()
+also_empty = tuple()
+
+# From list
+my_list = [1, 2, 3]
+my_tuple = tuple(my_list)  # (1, 2, 3)
+```
+
+### Tuple Operations
+
+```python
+point = (3, 4)
+
+# Indexing (same as lists)
+x = point[0]  # 3
+y = point[1]  # 4
+
+# Unpacking
+x, y = point
+print(x, y)  # 3 4
+
+# Extended unpacking
+numbers = (1, 2, 3, 4, 5)
+first, *middle, last = numbers
+# first = 1, middle = [2, 3, 4], last = 5
+
+# Concatenation
+tuple1 = (1, 2)
+tuple2 = (3, 4)
+combined = tuple1 + tuple2  # (1, 2, 3, 4)
+
+# Repetition
+repeated = (1, 2) * 3  # (1, 2, 1, 2, 1, 2)
+
+# Methods
+nums = (1, 2, 2, 3, 2)
+print(nums.count(2))   # 3
+print(nums.index(3))   # 3
+
+# Immutability
+# point[0] = 5  # TypeError: tuples are immutable
+```
+
+### Why Use Tuples?
+
+```python
+# 1. Function return values
+def get_min_max(numbers):
+    return min(numbers), max(numbers)  # Returns tuple
+
+minimum, maximum = get_min_max([1, 5, 3])
+
+# 2. Dictionary keys (tuples can be keys, lists cannot)
+locations = {
+    (0, 0): "origin",
+    (1, 0): "right",
+    (0, 1): "up"
+}
+
+# 3. Data integrity (immutable)
+RGB_RED = (255, 0, 0)  # Can't be accidentally modified
+
+# 4. Faster than lists
+import sys
+my_list = [1, 2, 3]
+my_tuple = (1, 2, 3)
+print(sys.getsizeof(my_list))   # More bytes
+print(sys.getsizeof(my_tuple))  # Less bytes
+```
+
+## Sets: Unordered, Unique Collections
+
+### Creating Sets
+
+```python
+# Using curly braces
+fruits = {"apple", "banana", "cherry"}
+
+# Using set()
+numbers = set([1, 2, 3, 3, 4])  # {1, 2, 3, 4} (duplicates removed)
+
+# Empty set (must use set(), {} creates dict)
+empty = set()
+
+# From string
+chars = set("hello")  # {'h', 'e', 'l', 'o'} (no duplicates)
+```
+
+### Set Operations
+
+```python
+# Add element
+fruits = {"apple", "banana"}
+fruits.add("cherry")  # {'apple', 'banana', 'cherry'}
+
+# Add multiple
+fruits.update(["date", "elderberry"])
+
+# Remove element
+fruits.remove("banana")  # KeyError if not found
+fruits.discard("banana")  # No error if not found
+
+# Pop random element
+item = fruits.pop()
+
+# Clear all
+fruits.clear()
+```
+
+### Mathematical Set Operations
+
+```python
+A = {1, 2, 3, 4, 5}
+B = {4, 5, 6, 7, 8}
+
+# Union (all elements from both)
+print(A | B)  # {1, 2, 3, 4, 5, 6, 7, 8}
+print(A.union(B))
+
+# Intersection (common elements)
+print(A & B)  # {4, 5}
+print(A.intersection(B))
+
+# Difference (in A but not B)
+print(A - B)  # {1, 2, 3}
+print(A.difference(B))
+
+# Symmetric difference (in A or B but not both)
+print(A ^ B)  # {1, 2, 3, 6, 7, 8}
+print(A.symmetric_difference(B))
+
+# Subset/Superset
+C = {1, 2}
+print(C <= A)  # True (C is subset of A)
+print(A >= C)  # True (A is superset of C)
+```
+
+### Set Use Cases
+
+```python
+# Remove duplicates
+numbers = [1, 2, 2, 3, 3, 3, 4]
+unique = list(set(numbers))  # [1, 2, 3, 4]
+
+# Membership testing (O(1) vs O(n) for list)
+large_list = list(range(1000000))
+large_set = set(large_list)
+
+# Slow
+# if 999999 in large_list:  # O(n)
+
+# Fast
+if 999999 in large_set:  # O(1)
+    print("Found!")
+
+# Find common elements
+list1 = [1, 2, 3, 4, 5]
+list2 = [4, 5, 6, 7, 8]
+common = set(list1) & set(list2)  # {4, 5}
+```
+
+## Dictionaries: Key-Value Pairs
+
+### Creating Dictionaries
+
+```python
+# Using curly braces
+person = {"name": "Alice", "age": 25, "city": "NYC"}
+
+# Using dict()
+person = dict(name="Alice", age=25, city="NYC")
+
+# From list of tuples
+pairs = [("name", "Alice"), ("age", 25)]
+person = dict(pairs)
+
+# Empty dictionary
+empty = {}
+also_empty = dict()
+
+# Dictionary comprehension
+squares = {x: x**2 for x in range(1, 6)}
+# {1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
+```
+
+### Accessing and Modifying
+
+```python
+person = {"name": "Alice", "age": 25, "city": "NYC"}
+
+# Access by key
+print(person["name"])  # "Alice"
+print(person.get("age"))  # 25
+
+# get() with default (better than [])
+print(person.get("country", "USA"))  # "USA" (default)
+# print(person["country"])  # KeyError!
+
+# Add/Update
+person["email"] = "alice@example.com"  # Add
+person["age"] = 26  # Update
+
+# Update multiple
+person.update({"age": 27, "job": "Engineer"})
+
+# Delete
+del person["city"]
+email = person.pop("email")  # Remove and return
+person.popitem()  # Remove and return last item (Python 3.7+)
+
+# Clear all
+person.clear()
+```
+
+### Dictionary Methods
+
+```python
+person = {"name": "Alice", "age": 25, "city": "NYC"}
+
+# keys(), values(), items()
+print(person.keys())    # dict_keys(['name', 'age', 'city'])
+print(person.values())  # dict_values(['Alice', 25, 'NYC'])
+print(person.items())   # dict_items([('name', 'Alice'), ...])
+
+# Iterate
+for key in person:
+    print(key, person[key])
+
+for key, value in person.items():
+    print(f"{key}: {value}")
+
+# Check key existence
+if "name" in person:
+    print("Name exists")
+
+# Copy
+copy = person.copy()
+
+# setdefault() - get or set
+person.setdefault("country", "USA")  # Returns "USA", adds if missing
+```
+
+### Nested Dictionaries
+
+```python
+# Dictionary of dictionaries
+users = {
+    "user1": {"name": "Alice", "age": 25},
+    "user2": {"name": "Bob", "age": 30}
+}
+
+print(users["user1"]["name"])  # "Alice"
+
+# Add new user
+users["user3"] = {"name": "Charlie", "age": 35}
+```
+
+### Dictionary Comprehensions
+
+```python
+# Basic
+squares = {x: x**2 for x in range(1, 6)}
+# {1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
+
+# With condition
+even_squares = {x: x**2 for x in range(1, 11) if x % 2 == 0}
+# {2: 4, 4: 16, 6: 36, 8: 64, 10: 100}
+
+# Swap keys and values
+original = {"a": 1, "b": 2, "c": 3}
+swapped = {v: k for k, v in original.items()}
+# {1: 'a', 2: 'b', 3: 'c'}
+
+# Filter
+scores = {"Alice": 85, "Bob": 92, "Charlie": 78}
+passed = {k: v for k, v in scores.items() if v >= 80}
+# {'Alice': 85, 'Bob': 92}
+```
+
+### Common Dictionary Patterns
+
+```python
+# Count frequency
+text = "hello world"
+freq = {}
+for char in text:
+    freq[char] = freq.get(char, 0) + 1
+print(freq)  # {'h': 1, 'e': 1, 'l': 3, 'o': 2, ...}
+
+# Or using setdefault
+freq = {}
+for char in text:
+    freq.setdefault(char, 0)
+    freq[char] += 1
+
+# Group items
+students = [
+    {"name": "Alice", "grade": "A"},
+    {"name": "Bob", "grade": "B"},
+    {"name": "Charlie", "grade": "A"}
+]
+
+by_grade = {}
+for student in students:
+    grade = student["grade"]
+    by_grade.setdefault(grade, []).append(student["name"])
+# {'A': ['Alice', 'Charlie'], 'B': ['Bob']}
+
+# Merge dictionaries (Python 3.9+)
+dict1 = {"a": 1, "b": 2}
+dict2 = {"c": 3, "d": 4}
+merged = dict1 | dict2  # {'a': 1, 'b': 2, 'c': 3, 'd': 4}
+
+# Pre-3.9
+merged = {**dict1, **dict2}
+```
+
+## Collections Module
+
+### Counter
+
+```python
+from collections import Counter
+
+# Count elements
+numbers = [1, 1, 2, 3, 3, 3, 4]
+count = Counter(numbers)
+print(count)  # Counter({3: 3, 1: 2, 2: 1, 4: 1})
+
+# Most common
+print(count.most_common(2))  # [(3, 3), (1, 2)]
+
+# String counting
+text = "mississippi"
+letters = Counter(text)
+print(letters)  # Counter({'i': 4, 's': 4, 'p': 2, 'm': 1})
+```
+
+### defaultdict
+
+```python
+from collections import defaultdict
+
+# Regular dict requires checking
+regular = {}
+for char in "hello":
+    if char not in regular:
+        regular[char] = 0
+    regular[char] += 1
+
+# defaultdict provides default value
+dd = defaultdict(int)  # default value is 0
+for char in "hello":
+    dd[char] += 1
+print(dd)  # defaultdict(<class 'int'>, {'h': 1, 'e': 1, 'l': 2, 'o': 1})
+
+# List as default
+dd_list = defaultdict(list)
+dd_list["fruits"].append("apple")
+dd_list["fruits"].append("banana")
+print(dd_list)  # defaultdict(<class 'list'>, {'fruits': ['apple', 'banana']})
+```
+
+## Choosing the Right Data Structure
+
+| Use Case | Best Choice | Why |
+|----------|-------------|-----|
+| Ordered collection | List | Maintains insertion order |
+| Unique elements | Set | Removes duplicates |
+| Key-value pairs | Dictionary | Fast lookup by key |
+| Immutable sequence | Tuple | Cannot be modified |
+| Stack (LIFO) | List | append() and pop() |
+| Queue (FIFO) | collections.deque | Fast from both ends |
+| Counting | Counter | Built for counting |
+| Fast membership | Set | O(1) lookup |
+
+## Time Complexity Cheat Sheet
+
+### List
+- Access: O(1)
+- Search: O(n)
+- Insert: O(n)
+- Append: O(1)
+- Pop (last): O(1)
+- Pop (first): O(n)
+
+### Set
+- Add: O(1)
+- Remove: O(1)
+- Search: O(1)
+- Union: O(len(s) + len(t))
+
+### Dictionary
+- Get: O(1)
+- Set: O(1)
+- Delete: O(1)
+- Search key: O(1)
+
+## Practice Exercises
+
+```python
+# Exercise 1: Two Sum
+def two_sum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []
+
+# Exercise 2: Remove Duplicates
+def remove_duplicates(nums):
+    return list(dict.fromkeys(nums))
+
+# Exercise 3: Group Anagrams
+def group_anagrams(words):
+    anagrams = {}
+    for word in words:
+        key = ''.join(sorted(word))
+        anagrams.setdefault(key, []).append(word)
+    return list(anagrams.values())
+```
+
+## Key Takeaways
+
+✅ Lists: mutable, ordered, allow duplicates
+✅ Tuples: immutable, ordered, faster than lists
+✅ Sets: unordered, unique elements, O(1) lookup
+✅ Dicts: key-value pairs, O(1) access
+✅ Use comprehensions for concise code
+✅ Choose data structure based on operations needed
+✅ Know time complexities for interviews
+
+## What's Next?
+
+**Part 5** covers:
+- String manipulation and formatting
+- Regular expressions
+- File I/O operations
+- Exception handling
+- Working with CSV and JSON
+
+See you in Part 5! 🐍

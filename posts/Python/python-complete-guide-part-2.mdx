@@ -1,0 +1,938 @@
+---
+title: "Python from A to Z: Part 2 - Control Flow and Logic Mastery"
+description: "Master Python's control flow with if/elif/else, for/while loops, match-case, and advanced loop patterns. Learn with practical examples and interview-focused exercises."
+date: "2025-10-24"
+author: "Goutham"
+tags: ["Python", "Programming", "Control Flow", "Loops", "Coding Interviews"]
+image: "/images/python-control-flow.svg"
+readTime: "18 min read"
+---
+
+# Python from A to Z: Part 2 - Control Flow and Logic Mastery
+
+Welcome back! In Part 1, we covered Python basics. Now, we'll learn how to make decisions and repeat actions—the heart of programming logic. By the end, you'll write programs that think and adapt.
+
+## Quick Recap: What We Learned
+
+- Variables and data types
+- Operators (arithmetic, comparison, logical)
+- Input and output
+- Basic Python syntax
+
+Let's build on this foundation!
+
+## Conditional Statements: Making Decisions
+
+### The if Statement
+
+Programs need to make decisions based on conditions.
+
+```python
+# Basic if statement
+age = 18
+
+if age >= 18:
+    print("You can vote!")
+    print("Welcome to adulthood")
+
+# If condition is False, nothing prints
+age = 15
+
+if age >= 18:
+    print("This won't print")
+
+print("This always prints (outside if block)")
+```
+
+**Key Points**:
+- Condition must evaluate to `True` or `False`
+- Colon `:` is required after condition
+- Indentation defines the block (4 spaces standard)
+
+### The if-else Statement
+
+What if you want to do something when condition is False?
+
+```python
+age = 16
+
+if age >= 18:
+    print("You can vote!")
+else:
+    print("You're too young to vote")
+    print("Wait a few more years")
+
+# Both blocks are indented
+# Only ONE block executes
+```
+
+### The if-elif-else Statement
+
+Multiple conditions? Use `elif` (else-if).
+
+```python
+score = 85
+
+if score >= 90:
+    grade = "A"
+elif score >= 80:
+    grade = "B"
+elif score >= 70:
+    grade = "C"
+elif score >= 60:
+    grade = "D"
+else:
+    grade = "F"
+
+print(f"Your grade is: {grade}")
+```
+
+**Flow**:
+1. Python checks conditions **top to bottom**
+2. First `True` condition executes its block
+3. Rest are **skipped** (even if True)
+4. `else` runs only if **all** conditions are False
+
+**Interview Tip**: Order matters!
+```python
+# ❌ Bad: This always gives "Minor"
+age = 25
+if age > 0:
+    print("Minor")  # This runs for ALL positive ages
+elif age >= 18:
+    print("Adult")  # Never reached!
+
+# ✅ Good: Most specific conditions first
+age = 25
+if age >= 18:
+    print("Adult")
+elif age > 0:
+    print("Minor")
+```
+
+### Nested if Statements
+
+Conditions inside conditions.
+
+```python
+age = 20
+has_license = True
+
+if age >= 18:
+    print("You're old enough to drive")
+    if has_license:
+        print("You can drive!")
+    else:
+        print("But you need a license")
+else:
+    print("You're too young to drive")
+```
+
+**Best Practice**: Avoid deep nesting (hard to read).
+```python
+# Instead of deep nesting, use logical operators
+age = 20
+has_license = True
+
+# Better approach
+if age >= 18 and has_license:
+    print("You can drive!")
+elif age >= 18:
+    print("You need a license")
+else:
+    print("You're too young")
+```
+
+### Ternary Operator (Conditional Expression)
+
+One-line if-else for simple cases.
+
+```python
+# Traditional if-else
+age = 20
+if age >= 18:
+    status = "Adult"
+else:
+    status = "Minor"
+
+# Ternary operator (Pythonic!)
+age = 20
+status = "Adult" if age >= 18 else "Minor"
+
+# Syntax: value_if_true if condition else value_if_false
+
+# Practical example
+number = 15
+result = "Even" if number % 2 == 0 else "Odd"
+print(result)  # "Odd"
+```
+
+**Interview Question**: When to use ternary?
+- **Use**: Simple assignments based on one condition
+- **Avoid**: Complex logic or multiple conditions (hurts readability)
+
+### Match-Case (Python 3.10+)
+
+The modern switch-case alternative.
+
+```python
+# Old way (multiple if-elif)
+command = "start"
+
+if command == "start":
+    print("Starting...")
+elif command == "stop":
+    print("Stopping...")
+elif command == "pause":
+    print("Pausing...")
+else:
+    print("Unknown command")
+
+# New way (match-case)
+command = "start"
+
+match command:
+    case "start":
+        print("Starting...")
+    case "stop":
+        print("Stopping...")
+    case "pause":
+        print("Pausing...")
+    case _:  # Default case (like 'else')
+        print("Unknown command")
+```
+
+**Advanced match-case patterns**:
+```python
+# Matching multiple values
+day = "Saturday"
+
+match day:
+    case "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday":
+        print("Weekday")
+    case "Saturday" | "Sunday":
+        print("Weekend!")
+    case _:
+        print("Invalid day")
+
+# Pattern matching with conditions (guards)
+number = 7
+
+match number:
+    case n if n < 0:
+        print("Negative")
+    case 0:
+        print("Zero")
+    case n if n > 0:
+        print("Positive")
+
+# Matching tuples
+point = (0, 5)
+
+match point:
+    case (0, 0):
+        print("Origin")
+    case (0, y):
+        print(f"On Y-axis at {y}")
+    case (x, 0):
+        print(f"On X-axis at {x}")
+    case (x, y):
+        print(f"Point at ({x}, {y})")
+```
+
+## Loops: Repeating Actions
+
+### The for Loop
+
+Iterate over sequences (lists, strings, ranges).
+
+```python
+# Looping through a list
+fruits = ["apple", "banana", "cherry"]
+
+for fruit in fruits:
+    print(fruit)
+
+# Output:
+# apple
+# banana
+# cherry
+
+# Looping through a string
+for char in "Python":
+    print(char)
+
+# Output: P y t h o n (each on new line)
+```
+
+**The range() function**:
+```python
+# range(stop): 0 to stop-1
+for i in range(5):
+    print(i)  # 0 1 2 3 4
+
+# range(start, stop): start to stop-1
+for i in range(2, 6):
+    print(i)  # 2 3 4 5
+
+# range(start, stop, step): with custom increment
+for i in range(0, 10, 2):
+    print(i)  # 0 2 4 6 8
+
+# Counting backwards
+for i in range(5, 0, -1):
+    print(i)  # 5 4 3 2 1
+```
+
+**Enumerate: Getting index and value**:
+```python
+fruits = ["apple", "banana", "cherry"]
+
+# Without enumerate
+for i in range(len(fruits)):
+    print(f"{i}: {fruits[i]}")
+
+# With enumerate (Pythonic!)
+for index, fruit in enumerate(fruits):
+    print(f"{index}: {fruit}")
+
+# Start index from 1
+for index, fruit in enumerate(fruits, start=1):
+    print(f"{index}. {fruit}")
+
+# Output:
+# 1. apple
+# 2. banana
+# 3. cherry
+```
+
+### The while Loop
+
+Repeats while condition is True.
+
+```python
+# Basic while loop
+count = 0
+
+while count < 5:
+    print(f"Count: {count}")
+    count += 1
+
+# Output: Count: 0, 1, 2, 3, 4
+
+# User input validation
+while True:
+    password = input("Enter password (min 6 chars): ")
+    if len(password) >= 6:
+        print("Password accepted!")
+        break  # Exit loop
+    print("Password too short, try again")
+```
+
+**Common Pitfall: Infinite Loops**
+```python
+# ❌ Infinite loop (never ends!)
+# count = 0
+# while count < 5:
+#     print(count)
+#     # Forgot to increment count!
+
+# ✅ Always ensure loop eventually becomes False
+count = 0
+while count < 5:
+    print(count)
+    count += 1  # Don't forget this!
+```
+
+### Loop Control: break, continue, pass
+
+#### break: Exit loop immediately
+
+```python
+# Find first even number
+numbers = [1, 3, 5, 7, 8, 9, 10]
+
+for num in numbers:
+    if num % 2 == 0:
+        print(f"First even number: {num}")
+        break  # Stop searching
+
+# Search with while loop
+i = 0
+while i < 100:
+    if i ** 2 > 50:
+        print(f"First square > 50: {i}^2 = {i**2}")
+        break
+    i += 1
+```
+
+#### continue: Skip current iteration
+
+```python
+# Print only odd numbers
+for num in range(1, 11):
+    if num % 2 == 0:
+        continue  # Skip even numbers
+    print(num)
+
+# Output: 1 3 5 7 9
+
+# Skip negative numbers
+numbers = [1, -5, 3, -2, 8, -7, 10]
+
+for num in numbers:
+    if num < 0:
+        continue  # Skip negatives
+    print(num)
+
+# Output: 1 3 8 10
+```
+
+#### pass: Do nothing (placeholder)
+
+```python
+# Useful during development
+for i in range(5):
+    if i == 3:
+        pass  # TODO: implement special case later
+    print(i)
+
+# Empty function/class placeholders
+def function_to_implement():
+    pass  # Will add code later
+
+class MyClass:
+    pass  # Will add methods later
+```
+
+### Loop else Clause
+
+Executes if loop completes **without** break.
+
+```python
+# Check if number is prime
+number = 17
+
+for i in range(2, number):
+    if number % i == 0:
+        print(f"{number} is not prime")
+        break
+else:
+    # Runs only if break was NOT called
+    print(f"{number} is prime")
+
+# Search in list
+search = "grape"
+fruits = ["apple", "banana", "cherry"]
+
+for fruit in fruits:
+    if fruit == search:
+        print(f"Found {search}!")
+        break
+else:
+    # Runs if item not found
+    print(f"{search} not in list")
+```
+
+**Interview Insight**: Very few languages have loop-else. Knowing this makes you stand out!
+
+### Nested Loops
+
+Loops inside loops.
+
+```python
+# Multiplication table
+for i in range(1, 6):
+    for j in range(1, 6):
+        print(f"{i} x {j} = {i*j}")
+    print()  # Blank line after each table
+
+# Pattern printing (interview favorite!)
+# Print triangle
+for i in range(1, 6):
+    for j in range(i):
+        print("*", end="")
+    print()  # New line
+
+# Output:
+# *
+# **
+# ***
+# ****
+# *****
+
+# Right-aligned triangle
+for i in range(1, 6):
+    # Print spaces
+    for j in range(5 - i):
+        print(" ", end="")
+    # Print stars
+    for k in range(i):
+        print("*", end="")
+    print()
+
+# Output:
+#     *
+#    **
+#   ***
+#  ****
+# *****
+```
+
+### List Comprehensions (Loop Alternative)
+
+Concise way to create lists.
+
+```python
+# Traditional approach
+squares = []
+for i in range(1, 6):
+    squares.append(i ** 2)
+print(squares)  # [1, 4, 9, 16, 25]
+
+# List comprehension (Pythonic!)
+squares = [i ** 2 for i in range(1, 6)]
+print(squares)  # [1, 4, 9, 16, 25]
+
+# With condition
+evens = [i for i in range(1, 11) if i % 2 == 0]
+print(evens)  # [2, 4, 6, 8, 10]
+
+# Transform strings
+words = ["hello", "world", "python"]
+upper_words = [word.upper() for word in words]
+print(upper_words)  # ['HELLO', 'WORLD', 'PYTHON']
+
+# Nested list comprehension
+matrix = [[i*j for j in range(1, 4)] for i in range(1, 4)]
+print(matrix)
+# [[1, 2, 3],
+#  [2, 4, 6],
+#  [3, 6, 9]]
+```
+
+## Common Loop Patterns (Interview Gold!)
+
+### 1. Two Pointers Pattern
+
+```python
+# Check if string is palindrome
+def is_palindrome(s):
+    left = 0
+    right = len(s) - 1
+
+    while left < right:
+        if s[left] != s[right]:
+            return False
+        left += 1
+        right -= 1
+
+    return True
+
+print(is_palindrome("racecar"))  # True
+print(is_palindrome("hello"))    # False
+```
+
+### 2. Sliding Window Pattern
+
+```python
+# Find max sum of k consecutive elements
+def max_sum_subarray(arr, k):
+    n = len(arr)
+    if n < k:
+        return None
+
+    # Calculate sum of first window
+    window_sum = sum(arr[:k])
+    max_sum = window_sum
+
+    # Slide the window
+    for i in range(k, n):
+        window_sum = window_sum - arr[i-k] + arr[i]
+        max_sum = max(max_sum, window_sum)
+
+    return max_sum
+
+arr = [1, 4, 2, 10, 23, 3, 1, 0, 20]
+k = 4
+print(max_sum_subarray(arr, k))  # 39 (10+23+3+1+0+20)
+```
+
+### 3. Fast and Slow Pointers
+
+```python
+# Find middle of list
+def find_middle(arr):
+    slow = fast = 0
+
+    while fast < len(arr) - 1:
+        slow += 1
+        fast += 2
+
+    return arr[slow]
+
+numbers = [1, 2, 3, 4, 5]
+print(find_middle(numbers))  # 3
+```
+
+### 4. Accumulator Pattern
+
+```python
+# Calculate factorial
+def factorial(n):
+    result = 1
+    for i in range(1, n + 1):
+        result *= i
+    return result
+
+print(factorial(5))  # 120
+
+# Sum of digits
+def sum_digits(n):
+    total = 0
+    while n > 0:
+        total += n % 10
+        n //= 10
+    return total
+
+print(sum_digits(12345))  # 15
+```
+
+## Practice Exercises
+
+### Exercise 1: FizzBuzz (Classic Interview Problem)
+```python
+"""
+Print numbers 1 to 100:
+- "Fizz" for multiples of 3
+- "Buzz" for multiples of 5
+- "FizzBuzz" for multiples of both
+- Number otherwise
+"""
+
+# Solution
+for i in range(1, 101):
+    if i % 15 == 0:  # Multiple of both 3 and 5
+        print("FizzBuzz")
+    elif i % 3 == 0:
+        print("Fizz")
+    elif i % 5 == 0:
+        print("Buzz")
+    else:
+        print(i)
+```
+
+### Exercise 2: Number Guessing Game
+```python
+"""
+Computer picks random number 1-100
+User guesses, gets "higher" or "lower" hints
+Track number of attempts
+"""
+
+import random
+
+# Solution
+secret = random.randint(1, 100)
+attempts = 0
+
+print("I'm thinking of a number between 1 and 100")
+
+while True:
+    guess = int(input("Your guess: "))
+    attempts += 1
+
+    if guess == secret:
+        print(f"Correct! You got it in {attempts} attempts")
+        break
+    elif guess < secret:
+        print("Higher!")
+    else:
+        print("Lower!")
+```
+
+### Exercise 3: Prime Number Checker
+```python
+"""
+Check if a number is prime
+Print all prime numbers in a range
+"""
+
+# Solution
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+# Test
+number = int(input("Enter a number: "))
+if is_prime(number):
+    print(f"{number} is prime")
+else:
+    print(f"{number} is not prime")
+
+# Print all primes from 1 to 50
+primes = [i for i in range(2, 51) if is_prime(i)]
+print(f"Primes 1-50: {primes}")
+```
+
+### Exercise 4: Reverse a Number
+```python
+"""
+Reverse the digits of a number
+Example: 12345 → 54321
+"""
+
+# Solution
+def reverse_number(n):
+    reversed_num = 0
+    while n > 0:
+        digit = n % 10
+        reversed_num = reversed_num * 10 + digit
+        n //= 10
+    return reversed_num
+
+num = 12345
+print(f"Original: {num}")
+print(f"Reversed: {reverse_number(num)}")
+```
+
+### Exercise 5: Pattern Printing
+```python
+"""
+Print this pattern for n=5:
+    *
+   ***
+  *****
+ *******
+*********
+"""
+
+# Solution
+def print_pyramid(n):
+    for i in range(1, n + 1):
+        # Print spaces
+        print(" " * (n - i), end="")
+        # Print stars
+        print("*" * (2 * i - 1))
+
+print_pyramid(5)
+```
+
+## Interview Questions - Part 2
+
+### Q1: What's the difference between `break` and `continue`?
+**Answer**:
+- `break`: Exits the loop immediately
+- `continue`: Skips current iteration, continues with next
+
+```python
+for i in range(5):
+    if i == 2:
+        break
+    print(i)  # Output: 0 1
+
+for i in range(5):
+    if i == 2:
+        continue
+    print(i)  # Output: 0 1 3 4
+```
+
+### Q2: What does loop-else do?
+**Answer**: `else` block runs if loop completes without `break`.
+
+```python
+for i in range(3):
+    print(i)
+else:
+    print("Loop completed normally")
+# Output: 0 1 2 Loop completed normally
+
+for i in range(3):
+    if i == 1:
+        break
+else:
+    print("This won't print")
+```
+
+### Q3: How to exit nested loops?
+**Answer**: Use a flag or function with return.
+
+```python
+# Using flag
+found = False
+for i in range(3):
+    for j in range(3):
+        if i == j == 1:
+            found = True
+            break
+    if found:
+        break
+
+# Using function (cleaner)
+def search():
+    for i in range(3):
+        for j in range(3):
+            if i == j == 1:
+                return "Found!"
+    return "Not found"
+```
+
+### Q4: What's more efficient: `while` or `for`?
+**Answer**: Same performance. Choose based on use case:
+- Use `for` when you know iterations (ranges, lists)
+- Use `while` for condition-based loops (user input, searches)
+
+### Q5: Explain this code:
+```python
+x = [i for i in range(10) if i % 2 == 0]
+```
+**Answer**: List comprehension creating list of even numbers 0-9.
+Equivalent to:
+```python
+x = []
+for i in range(10):
+    if i % 2 == 0:
+        x.append(i)
+# x = [0, 2, 4, 6, 8]
+```
+
+## Common Mistakes to Avoid
+
+### 1. Forgetting Colon
+```python
+# ❌ Wrong
+if x > 5
+    print("Greater")
+
+# ✅ Correct
+if x > 5:
+    print("Greater")
+```
+
+### 2. Wrong Indentation
+```python
+# ❌ Wrong
+if True:
+print("Hello")  # IndentationError
+
+# ✅ Correct
+if True:
+    print("Hello")
+```
+
+### 3. Using = Instead of ==
+```python
+x = 5
+# ❌ Assignment in condition
+if x = 5:  # SyntaxError
+    print("Five")
+
+# ✅ Comparison
+if x == 5:
+    print("Five")
+```
+
+### 4. Infinite Loop
+```python
+# ❌ Never ends
+i = 0
+while i < 5:
+    print(i)
+    # Forgot i += 1
+
+# ✅ Proper increment
+i = 0
+while i < 5:
+    print(i)
+    i += 1
+```
+
+### 5. Modifying List While Iterating
+```python
+numbers = [1, 2, 3, 4, 5]
+
+# ❌ Dangerous
+for i in range(len(numbers)):
+    if numbers[i] % 2 == 0:
+        numbers.pop(i)  # Index error!
+
+# ✅ Create new list
+numbers = [1, 2, 3, 4, 5]
+odd_numbers = [n for n in numbers if n % 2 != 0]
+```
+
+## Performance Tips
+
+### 1. Use `in` for Membership Testing
+```python
+# ❌ Slower
+found = False
+for item in my_list:
+    if item == search_value:
+        found = True
+        break
+
+# ✅ Faster
+found = search_value in my_list
+```
+
+### 2. List Comprehensions vs Loops
+```python
+# ❌ Slower
+squares = []
+for i in range(1000):
+    squares.append(i ** 2)
+
+# ✅ Faster
+squares = [i ** 2 for i in range(1000)]
+```
+
+### 3. Avoid Nested Loops When Possible
+```python
+# ❌ O(n²) - slow for large lists
+for item1 in list1:
+    for item2 in list2:
+        if item1 == item2:
+            print("Match!")
+
+# ✅ O(n) - use sets
+set1 = set(list1)
+for item in list2:
+    if item in set1:
+        print("Match!")
+```
+
+## Key Takeaways
+
+✅ Use `if-elif-else` for multiple conditions
+✅ `match-case` is cleaner than multiple `if-elif` (Python 3.10+)
+✅ `for` loops iterate over sequences; `while` loops run while condition is True
+✅ `break` exits loop; `continue` skips iteration; `pass` does nothing
+✅ Loop-else runs if loop completes without `break`
+✅ List comprehensions are Pythonic and often faster
+✅ Master common patterns: two pointers, sliding window, accumulator
+
+## What's Next?
+
+In **Part 3**, we'll explore:
+- Functions: built-in and user-defined
+- Parameters and return values
+- Lambda functions
+- Recursion and recursive problem-solving
+- Function decorators basics
+- Scope and namespaces
+
+---
+
+**Challenge**: Before Part 3, solve these:
+
+1. **Leap Year Checker**: Determine if a year is a leap year
+2. **Armstrong Number**: Check if sum of cubes of digits equals the number (153 = 1³ + 5³ + 3³)
+3. **Fibonacci Sequence**: Print first n Fibonacci numbers
+4. **Diamond Pattern**: Print diamond shape with stars
+
+Try solving these on your own—practice makes perfect! 🐍

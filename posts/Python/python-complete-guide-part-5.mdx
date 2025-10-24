@@ -1,0 +1,394 @@
+---
+title: "Python from A to Z: Part 5 - Strings, Files, and Exception Handling"
+description: "Master string manipulation, file I/O, exception handling, and working with CSV/JSON files. Essential skills for every Python developer and coding interviews."
+date: "2025-10-24"
+author: "Goutham"
+tags: ["Python", "Strings", "Files", "Exception Handling", "Coding Interviews"]
+image: "/images/python-strings-files.svg"
+readTime: "18 min read"
+---
+
+# Python from A to Z: Part 5 - Strings, Files, and Exception Handling
+
+Master string operations, file handling, and error management—essential for real-world Python development!
+
+## String Methods
+
+```python
+text = "Hello, World!"
+
+# Case conversion
+print(text.lower())        # "hello, world!"
+print(text.upper())        # "HELLO, WORLD!"
+print(text.title())        # "Hello, World!"
+print(text.capitalize())   # "Hello, world!"
+print(text.swapcase())     # "hELLO, wORLD!"
+
+# Checking
+print(text.startswith("Hello"))  # True
+print(text.endswith("!"))        # True
+print("123".isdigit())           # True
+print("abc".isalpha())           # True
+print("abc123".isalnum())        # True
+
+# Whitespace
+text = "  hello  "
+print(text.strip())   # "hello"
+print(text.lstrip())  # "hello  "
+print(text.rstrip())  # "  hello"
+
+# Find and replace
+text = "Python is awesome"
+print(text.find("is"))        # 7 (index)
+print(text.replace("awesome", "great"))  # "Python is great"
+print(text.count("o"))        # 2
+
+# Split and join
+sentence = "one,two,three"
+words = sentence.split(",")   # ['one', 'two', 'three']
+joined = "-".join(words)      # "one-two-three"
+```
+
+## String Formatting
+
+```python
+name = "Alice"
+age = 25
+
+# f-strings (Python 3.6+, preferred)
+print(f"My name is {name} and I'm {age}")
+print(f"Next year: {age + 1}")
+print(f"Pi: {3.14159:.2f}")  # 3.14
+
+# format() method
+print("Name: {}, Age: {}".format(name, age))
+print("Name: {n}, Age: {a}".format(n=name, a=age))
+
+# % formatting (old style)
+print("Name: %s, Age: %d" % (name, age))
+
+# Multiline
+message = f"""
+Hello {name},
+You are {age} years old.
+"""
+```
+
+## File I/O
+
+### Reading Files
+
+```python
+# Method 1: Using with (recommended)
+with open("file.txt", "r") as f:
+    content = f.read()  # Read entire file
+    print(content)
+
+# Method 2: Read line by line
+with open("file.txt", "r") as f:
+    for line in f:
+        print(line.strip())
+
+# Method 3: Read all lines into list
+with open("file.txt", "r") as f:
+    lines = f.readlines()  # List of lines
+
+# Read specific number of characters
+with open("file.txt", "r") as f:
+    first_10 = f.read(10)
+```
+
+### Writing Files
+
+```python
+# Write (overwrites existing)
+with open("output.txt", "w") as f:
+    f.write("Hello, World!\n")
+    f.write("Second line")
+
+# Append
+with open("output.txt", "a") as f:
+    f.write("\nThird line")
+
+# Write multiple lines
+lines = ["Line 1\n", "Line 2\n", "Line 3\n"]
+with open("output.txt", "w") as f:
+    f.writelines(lines)
+```
+
+### File Modes
+
+```python
+# 'r'  - Read (default)
+# 'w'  - Write (creates/overwrites)
+# 'a'  - Append
+# 'r+' - Read and write
+# 'rb' - Read binary
+# 'wb' - Write binary
+```
+
+### Working with Paths
+
+```python
+import os
+
+# Check if file exists
+if os.path.exists("file.txt"):
+    print("File exists")
+
+# Get file size
+size = os.path.getsize("file.txt")
+
+# List directory
+files = os.listdir(".")
+
+# Join paths
+path = os.path.join("folder", "subfolder", "file.txt")
+
+# Get current directory
+cwd = os.getcwd()
+```
+
+## Exception Handling
+
+### try-except
+
+```python
+# Basic exception handling
+try:
+    number = int(input("Enter number: "))
+    result = 10 / number
+    print(result)
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+except ValueError:
+    print("Invalid number!")
+```
+
+### Multiple Exceptions
+
+```python
+try:
+    # risky code
+    pass
+except (ValueError, TypeError) as e:
+    print(f"Error: {e}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+### try-except-else-finally
+
+```python
+try:
+    file = open("data.txt", "r")
+    data = file.read()
+except FileNotFoundError:
+    print("File not found!")
+else:
+    # Runs if no exception
+    print("File read successfully")
+finally:
+    # Always runs (cleanup)
+    if 'file' in locals():
+        file.close()
+```
+
+### Raising Exceptions
+
+```python
+def divide(a, b):
+    if b == 0:
+        raise ValueError("Divisor cannot be zero")
+    return a / b
+
+try:
+    result = divide(10, 0)
+except ValueError as e:
+    print(e)
+```
+
+### Custom Exceptions
+
+```python
+class InvalidAgeError(Exception):
+    pass
+
+def set_age(age):
+    if age < 0:
+        raise InvalidAgeError("Age cannot be negative")
+    return age
+
+try:
+    set_age(-5)
+except InvalidAgeError as e:
+    print(e)
+```
+
+## Working with CSV
+
+```python
+import csv
+
+# Read CSV
+with open("data.csv", "r") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        print(row)  # Each row is a list
+
+# Read with DictReader
+with open("data.csv", "r") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        print(row["name"], row["age"])  # Access by column name
+
+# Write CSV
+data = [
+    ["Name", "Age", "City"],
+    ["Alice", 25, "NYC"],
+    ["Bob", 30, "LA"]
+]
+
+with open("output.csv", "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerows(data)
+
+# Write with DictWriter
+data = [
+    {"name": "Alice", "age": 25},
+    {"name": "Bob", "age": 30}
+]
+
+with open("output.csv", "w", newline="") as f:
+    fieldnames = ["name", "age"]
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(data)
+```
+
+## Working with JSON
+
+```python
+import json
+
+# Read JSON
+with open("data.json", "r") as f:
+    data = json.load(f)  # Converts to Python dict/list
+
+# Write JSON
+data = {
+    "name": "Alice",
+    "age": 25,
+    "hobbies": ["reading", "coding"]
+}
+
+with open("output.json", "w") as f:
+    json.dump(data, f, indent=4)  # Pretty print
+
+# JSON string to Python
+json_str = '{"name": "Bob", "age": 30}'
+data = json.loads(json_str)
+
+# Python to JSON string
+data = {"name": "Charlie", "age": 35}
+json_str = json.dumps(data, indent=2)
+```
+
+## Regular Expressions (Basics)
+
+```python
+import re
+
+# Search
+text = "My email is alice@example.com"
+match = re.search(r"\w+@\w+\.\w+", text)
+if match:
+    print(match.group())  # alice@example.com
+
+# Find all
+text = "Call me at 123-456-7890 or 098-765-4321"
+phones = re.findall(r"\d{3}-\d{3}-\d{4}", text)
+# ['123-456-7890', '098-765-4321']
+
+# Replace
+text = "Hello 123 World 456"
+result = re.sub(r"\d+", "X", text)  # "Hello X World X"
+
+# Split
+text = "one,two;three:four"
+parts = re.split(r"[,;:]", text)  # ['one', 'two', 'three', 'four']
+
+# Match patterns
+if re.match(r"^\d{3}-\d{2}-\d{4}$", "123-45-6789"):
+    print("Valid SSN format")
+```
+
+## Practice Exercises
+
+```python
+# Exercise 1: Word frequency counter
+def word_frequency(text):
+    words = text.lower().split()
+    freq = {}
+    for word in words:
+        freq[word] = freq.get(word, 0) + 1
+    return freq
+
+# Exercise 2: Read and filter file
+def filter_lines(filename, keyword):
+    with open(filename, "r") as f:
+        return [line.strip() for line in f if keyword in line]
+
+# Exercise 3: CSV to JSON
+def csv_to_json(csv_file, json_file):
+    import csv, json
+    with open(csv_file, "r") as f:
+        reader = csv.DictReader(f)
+        data = list(reader)
+    with open(json_file, "w") as f:
+        json.dump(data, f, indent=2)
+
+# Exercise 4: Safe file reader
+def safe_read_file(filename):
+    try:
+        with open(filename, "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        return f"Error: {filename} not found"
+    except PermissionError:
+        return f"Error: No permission to read {filename}"
+```
+
+## Interview Questions
+
+**Q1: How to read large files efficiently?**
+```python
+# Bad: loads entire file into memory
+with open("huge.txt", "r") as f:
+    content = f.read()
+
+# Good: read line by line
+with open("huge.txt", "r") as f:
+    for line in f:
+        process(line)
+```
+
+**Q2: Difference between 'w' and 'a' modes?**
+- 'w': Overwrites file (creates if doesn't exist)
+- 'a': Appends to end (creates if doesn't exist)
+
+**Q3: Why use 'with' statement?**
+- Automatically closes file (even if exception occurs)
+- Cleaner code
+- Best practice
+
+## Key Takeaways
+
+✅ Use f-strings for modern string formatting
+✅ Always use `with` for file operations
+✅ Handle exceptions gracefully
+✅ CSV and JSON are common interview topics
+✅ Know basic regex patterns
+✅ Read large files line-by-line
+
+**Part 6** covers Object-Oriented Programming!
