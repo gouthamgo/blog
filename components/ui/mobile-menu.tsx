@@ -5,7 +5,11 @@ import Link from 'next/link'
 import { Menu, X, Search, Code2 } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 
-export function MobileMenu() {
+interface MobileMenuProps {
+  onSearchOpen: () => void
+}
+
+export function MobileMenu({ onSearchOpen }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -74,7 +78,7 @@ export function MobileMenu() {
             <Link href="/about" className="mobile-menu-item" onClick={handleLinkClick}>
               ABOUT
             </Link>
-            <button className="mobile-menu-search">
+            <button className="mobile-menu-search" onClick={() => { setIsOpen(false); onSearchOpen(); }}>
               <Search size={18} />
               <span>SEARCH</span>
               <kbd className="mobile-search-shortcut">⌘K</kbd>

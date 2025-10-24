@@ -1,9 +1,28 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Search, Code2 } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 import { MobileMenu } from './mobile-menu'
+import { SearchModal } from './search-modal'
 
 export function Header() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+
+  // CMD+K / CTRL+K shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsSearchOpen(true)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   return (
     <header className="professional-header">
       <nav className="professional-nav">
@@ -29,7 +48,7 @@ export function Header() {
             ABOUT
           </Link>
           <span className="nav-separator">•</span>
-          <button className="nav-search">
+          <button className="nav-search" onClick={() => setIsSearchOpen(true)}>
             <Search size={16} />
             <span className="search-text">SEARCH</span>
             <kbd className="search-shortcut">⌘K</kbd>
@@ -41,10 +60,12 @@ export function Header() {
             <ThemeToggle />
           </div>
           <div className="mobile-only">
-            <MobileMenu />
+            <MobileMenu onSearchOpen={() => setIsSearchOpen(true)} />
           </div>
         </div>
       </nav>
+
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   )
 }
