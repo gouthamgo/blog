@@ -5,18 +5,18 @@ import { BackToTop } from '@/components/ui/back-to-top'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | My Tech Blog',
-  description: 'Privacy Policy for My Tech Blog. Learn how we collect, use, and protect your personal information.',
+  title: 'Privacy Policy | DevMind',
+  description: 'Privacy Policy for DevMind. Learn how we collect, use, and protect your personal information.',
   keywords: ['privacy policy', 'data protection', 'privacy', 'personal information'],
   openGraph: {
-    title: 'Privacy Policy | My Tech Blog',
-    description: 'Privacy Policy for My Tech Blog. Learn how we collect, use, and protect your personal information.',
+    title: 'Privacy Policy | DevMind',
+    description: 'Privacy Policy for DevMind. Learn how we collect, use, and protect your personal information.',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Privacy Policy | My Tech Blog',
-    description: 'Privacy Policy for My Tech Blog. Learn how we collect, use, and protect your personal information.',
+    title: 'Privacy Policy | DevMind',
+    description: 'Privacy Policy for DevMind. Learn how we collect, use, and protect your personal information.',
   },
 }
 

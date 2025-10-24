@@ -52,7 +52,7 @@ export function MobileMenu() {
         <div className="mobile-menu-header">
           <Link href="/" className="mobile-brand-logo" onClick={handleLinkClick}>
             <Code2 size={20} />
-            <span>Goutham.ai</span>
+            <span>DevMind</span>
           </Link>
           <button
             className="mobile-menu-close"

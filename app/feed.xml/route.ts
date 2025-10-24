@@ -8,8 +8,8 @@ export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>My Tech Blog</title>
-    <description>Exploring the latest in web development, programming, and technology. Join me on this journey of continuous learning and innovation.</description>
+    <title>DevMind</title>
+    <description>Where developer insights meet artificial intelligence. Exploring AI, ML, and modern development practices.</description>
     <link>${baseUrl}</link>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>

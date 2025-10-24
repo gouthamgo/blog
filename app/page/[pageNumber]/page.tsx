@@ -24,11 +24,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `My Tech Blog - Page ${pageNumber}`,
-    description: `Browse our latest tech articles and tutorials - Page ${pageNumber}. Stay updated with web development, programming, and technology trends.`,
+    title: `DevMind - Page ${pageNumber}`,
+    description: `Browse our latest AI, ML, and development articles - Page ${pageNumber}. Stay updated with artificial intelligence, machine learning, and modern development practices.`,
     openGraph: {
-      title: `My Tech Blog - Page ${pageNumber}`,
-      description: `Browse our latest tech articles and tutorials - Page ${pageNumber}. Stay updated with web development, programming, and technology trends.`,
+      title: `DevMind - Page ${pageNumber}`,
+      description: `Browse our latest AI, ML, and development articles - Page ${pageNumber}. Stay updated with artificial intelligence, machine learning, and modern development practices.`,
       type: 'website'
     }
   }
@@ -62,11 +62,10 @@ export default function PaginatedPage({ params }: PageProps) {
 
           <div className="mb-16 text-center">
             <h1 className="medium-large-title mb-6">
-              My Tech Blog {currentPage > 1 && `- Page ${currentPage}`}
+              DevMind {currentPage > 1 && `- Page ${currentPage}`}
             </h1>
             <p className="text-xl text-medium-gray-600 dark:text-medium-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Exploring the latest in web development, programming, and technology.
-              Join me on this journey of continuous learning and innovation.
+              Where developer insights meet artificial intelligence. Exploring AI, ML, and modern development practices.
             </p>
           </div>
 

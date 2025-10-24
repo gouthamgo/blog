@@ -9,10 +9,9 @@ export function Footer() {
       <div className="footer-container">
         <div className="footer-content">
           <div className="footer-section">
-            <h3 className="footer-title">My Tech Blog</h3>
+            <h3 className="footer-title">DevMind</h3>
             <p className="footer-description">
-              Exploring the latest in web development, programming, and technology.
-              Join me on this journey of continuous learning and innovation.
+              Where developer insights meet artificial intelligence. Exploring AI, ML, and modern development practices.
             </p>
             <div className="footer-social">
               <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label="GitHub">
@@ -63,7 +62,7 @@ export function Footer() {
 
         <div className="footer-bottom">
           <div className="footer-copyright">
-            <p>&copy; {currentYear} My Tech Blog. All rights reserved.</p>
+            <p>&copy; {currentYear} DevMind. All rights reserved.</p>
           </div>
           <div className="footer-credits">
             <p>Built with <Link href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="footer-tech-link">Next.js</Link> and ❤️</p>

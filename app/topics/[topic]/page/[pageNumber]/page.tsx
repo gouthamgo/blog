@@ -51,10 +51,10 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
   }
 
   return {
-    title: `${topicName} - Page ${pageNumber} - My Tech Blog`,
+    title: `${topicName} - Page ${pageNumber} - DevMind`,
     description: `Explore all articles and tutorials about ${topicName} - Page ${pageNumber}. Stay up to date with the latest trends and best practices.`,
     openGraph: {
-      title: `${topicName} - Page ${pageNumber} - My Tech Blog`,
+      title: `${topicName} - Page ${pageNumber} - DevMind`,
       description: `Explore all articles and tutorials about ${topicName} - Page ${pageNumber}. Stay up to date with the latest trends and best practices.`,
       type: 'website'
     }

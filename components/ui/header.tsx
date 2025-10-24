@@ -11,9 +11,7 @@ export function Header() {
           <Link href="/" className="brand-logo">
             <Code2 className="logo-icon" size={24} />
             <span className="logo-text">
-              <span className="logo-name">Goutham</span>
-              <span className="logo-divider">.</span>
-              <span className="logo-type">ai</span>
+              <span className="logo-name">DevMind</span>
             </span>
           </Link>
         </div>

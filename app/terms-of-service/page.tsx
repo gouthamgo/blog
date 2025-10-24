@@ -5,18 +5,18 @@ import { BackToTop } from '@/components/ui/back-to-top'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | My Tech Blog',
-  description: 'Terms of Service for My Tech Blog. Learn about the terms and conditions for using our website.',
-  keywords: ['terms of service', 'terms and conditions', 'legal terms', 'user agreement'],
+  title: 'Terms of Service | DevMind',
+  description: 'Terms of Service for DevMind. Learn about the terms and conditions for using our website.',
+  keywords: ['terms of service', 'terms and conditions', 'legal terms', 'user agreement', 'DevMind'],
   openGraph: {
-    title: 'Terms of Service | My Tech Blog',
-    description: 'Terms of Service for My Tech Blog. Learn about the terms and conditions for using our website.',
+    title: 'Terms of Service | DevMind',
+    description: 'Terms of Service for DevMind. Learn about the terms and conditions for using our website.',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Terms of Service | My Tech Blog',
-    description: 'Terms of Service for My Tech Blog. Learn about the terms and conditions for using our website.',
+    title: 'Terms of Service | DevMind',
+    description: 'Terms of Service for DevMind. Learn about the terms and conditions for using our website.',
   },
 }
 

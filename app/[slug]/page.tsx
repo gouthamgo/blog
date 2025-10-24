@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       title: post.title,
       description: post.description,
       url: url,
-      siteName: 'My Tech Blog',
+      siteName: 'DevMind',
       type: 'article',
       publishedTime: post.date,
       authors: [post.author],
@@ -126,7 +126,7 @@ export default function PostPage({ params }: PostPageProps) {
     },
     publisher: {
       '@type': 'Organization',
-      name: 'My Tech Blog',
+      name: 'DevMind',
       logo: {
         '@type': 'ImageObject',
         url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/logo.png`

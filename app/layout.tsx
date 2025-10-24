@@ -12,10 +12,10 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Goutham.ai - AI, ML & Tech Blog',
-  description: 'Exploring Artificial Intelligence, Machine Learning, and Coding through practical tutorials and insights by Goutham',
+  title: 'DevMind - AI, ML & Developer Insights',
+  description: 'Exploring Artificial Intelligence, Machine Learning, and modern development practices through practical tutorials and expert insights',
   authors: [{ name: 'Goutham' }],
-  keywords: ['AI', 'ML', 'artificial intelligence', 'machine learning', 'blog', 'tech', 'programming', 'coding', 'tutorials'],
+  keywords: ['AI', 'ML', 'artificial intelligence', 'machine learning', 'blog', 'tech', 'programming', 'coding', 'tutorials', 'developer', 'DevMind'],
 }
 
 export default function RootLayout({

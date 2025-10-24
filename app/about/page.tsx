@@ -5,26 +5,26 @@ import { LayoutWithSidebar } from '@/components/ui/layout-with-sidebar'
 import { BackToTop } from '@/components/ui/back-to-top'
 
 export const metadata: Metadata = {
-  title: 'About | My Tech Blog',
-  description: 'Learn about My Tech Blog and the passionate developer behind it. Discover the mission, values, and journey of continuous learning in technology.',
-  keywords: ['about', 'developer', 'tech blogger', 'programming', 'web development'],
+  title: 'About | DevMind',
+  description: 'Learn about DevMind and the passionate developer behind it. Discover the mission, values, and journey of continuous learning in technology, AI, and development.',
+  keywords: ['about', 'developer', 'tech blogger', 'programming', 'web development', 'AI', 'ML', 'DevMind'],
   openGraph: {
-    title: 'About | My Tech Blog',
-    description: 'Learn about My Tech Blog and the passionate developer behind it.',
+    title: 'About | DevMind',
+    description: 'Learn about DevMind and the passionate developer behind it.',
     type: 'website',
     images: [
       {
         url: '/images/about-hero.jpg',
         width: 800,
         height: 400,
-        alt: 'About My Tech Blog',
+        alt: 'About DevMind',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'About | My Tech Blog',
-    description: 'Learn about My Tech Blog and the passionate developer behind it.',
+    title: 'About | DevMind',
+    description: 'Learn about DevMind and the passionate developer behind it.',
   },
 }
 
@@ -38,9 +38,9 @@ export default function AboutPage() {
         <LayoutWithSidebar>
           <article className="medium-article">
             <header className="about-header">
-              <h1 className="about-title">About My Tech Blog</h1>
+              <h1 className="about-title">About DevMind</h1>
               <p className="about-subtitle">
-                Exploring the frontier of technology, one post at a time.
+                Where developer insights meet artificial intelligence.
               </p>
             </header>
 
@@ -54,14 +54,14 @@ export default function AboutPage() {
               <section className="about-section">
                 <h2>About the Blog</h2>
                 <p>
-                  Welcome to My Tech Blog, a digital space dedicated to exploring the ever-evolving world of technology.
-                  Here, we dive deep into web development, programming paradigms, artificial intelligence, and the latest
-                  innovations shaping our digital future.
+                  Welcome to DevMind, a digital space dedicated to exploring the ever-evolving world of technology,
+                  artificial intelligence, and modern development practices. Here, we dive deep into AI, machine learning,
+                  web development, and the latest innovations shaping our digital future.
                 </p>
                 <p>
-                  This blog serves as both a learning journal and a knowledge-sharing platform, where complex technical
+                  DevMind serves as both a learning journal and a knowledge-sharing platform, where complex technical
                   concepts are broken down into digestible insights. Whether you&apos;re a seasoned developer, a curious beginner,
-                  or someone passionate about technology, you&apos;ll find content that challenges, educates, and inspires.
+                  or someone passionate about technology and AI, you&apos;ll find content that challenges, educates, and inspires.
                 </p>
               </section>
 
