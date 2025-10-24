@@ -12,10 +12,24 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://devmindai.netlify.app'),
   title: 'DevMind - AI, ML & Developer Insights',
   description: 'Exploring Artificial Intelligence, Machine Learning, and modern development practices through practical tutorials and expert insights',
   authors: [{ name: 'Goutham' }],
   keywords: ['AI', 'ML', 'artificial intelligence', 'machine learning', 'blog', 'tech', 'programming', 'coding', 'tutorials', 'developer', 'DevMind'],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: '/',
+    siteName: 'DevMind',
+    title: 'DevMind - AI, ML & Developer Insights',
+    description: 'Exploring Artificial Intelligence, Machine Learning, and modern development practices through practical tutorials and expert insights',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DevMind - AI, ML & Developer Insights',
+    description: 'Exploring Artificial Intelligence, Machine Learning, and modern development practices through practical tutorials and expert insights',
+  },
 }
 
 export default function RootLayout({

@@ -32,6 +32,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Allow .env.production for deployment
+!.env.production
+
 # Vercel
 .vercel
 
@@ -167,3 +170,6 @@ temp/
 .claude/
 .claude/*
 *.claude
+
+# Keep .env.local for local development (not committed)
+# .env.production is committed for deployment

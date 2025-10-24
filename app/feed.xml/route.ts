@@ -14,8 +14,8 @@ export async function GET() {
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml" />
-    <managingEditor>hello@mytechblog.com (Tech Blogger)</managingEditor>
-    <webMaster>hello@mytechblog.com (Tech Blogger)</webMaster>
+    <managingEditor>contact@devmindai.com (DevMind Team)</managingEditor>
+    <webMaster>contact@devmindai.com (DevMind Team)</webMaster>
     <category>Technology</category>
     <category>Programming</category>
     <category>Web Development</category>
@@ -30,7 +30,7 @@ export async function GET() {
       <link>${baseUrl}/${post.slug}</link>
       <guid isPermaLink="true">${baseUrl}/${post.slug}</guid>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-      <author>hello@mytechblog.com (${post.author})</author>
+      <author>contact@devmindai.com (${post.author})</author>
       ${post.tags?.map(tag => `<category>${tag}</category>`).join('') || ''}
     </item>`
       )

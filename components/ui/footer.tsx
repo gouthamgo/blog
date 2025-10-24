@@ -23,7 +23,7 @@ export function Footer() {
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label="LinkedIn">
                 <Linkedin size={20} />
               </a>
-              <a href="mailto:hello@mytechblog.com" className="footer-social-link" aria-label="Email">
+              <a href="mailto:contact@devmindai.com" className="footer-social-link" aria-label="Email">
                 <Mail size={20} />
               </a>
             </div>
