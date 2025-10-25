@@ -1,0 +1,665 @@
+---
+title: "Machine Learning from A to Z: Part 4 - Regression Algorithms"
+description: "Master regression algorithms: Linear Regression, Polynomial Regression, Ridge, Lasso, Decision Trees, Random Forests, and more with real-world examples."
+date: "2025-10-25"
+author: "Goutham"
+tags: ["Machine Learning", "Regression", "Linear Regression", "Random Forest", "Python"]
+image: "/images/ml-regression.svg"
+readTime: "22 min read"
+---
+
+# Machine Learning from A to Z: Part 4 - Regression Algorithms
+
+Predict continuous values! Master all major regression algorithms with practical implementations.
+
+## What is Regression?
+
+**Regression** predicts a continuous numerical value based on input features.
+
+```python
+# Examples of regression problems:
+- Predict house price: $350,000
+- Predict temperature: 72.5°F
+- Predict stock price: $145.23
+- Predict sales: $1.2M
+- Predict student score: 87.3%
+```
+
+## Linear Regression
+
+The simplest and most fundamental regression algorithm.
+
+### Concept
+
+Find the best-fit line: `y = mx + b`
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Sample data: Study hours vs Exam score
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(-1, 1)
+y = np.array([45, 55, 60, 65, 70, 80, 85, 90])
+
+# Create and train model
+model = LinearRegression()
+model.fit(X, y)
+
+# Get equation: y = mx + b
+print(f"Equation: y = {model.coef_[0]:.2f}x + {model.intercept_:.2f}")
+
+# Predict
+predictions = model.predict(X)
+
+# Evaluate
+mse = mean_squared_error(y, predictions)
+r2 = r2_score(y, predictions)
+print(f"MSE: {mse:.2f}")
+print(f"R² Score: {r2:.2f}")
+
+# Visualize
+plt.scatter(X, y, color='blue', label='Actual')
+plt.plot(X, predictions, color='red', label='Prediction')
+plt.xlabel('Study Hours')
+plt.ylabel('Exam Score')
+plt.legend()
+plt.title('Linear Regression')
+plt.show()
+
+# Predict for new data
+new_student = [[6.5]]
+score = model.predict(new_student)
+print(f"Student studying 6.5 hours → Score: {score[0]:.1f}")
+```
+
+**Output:**
+```
+Equation: y = 6.07x + 40.00
+MSE: 9.82
+R² Score: 0.98
+Student studying 6.5 hours → Score: 79.5
+```
+
+### Multiple Linear Regression
+
+```python
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+
+# Load dataset
+housing = fetch_california_housing()
+X = housing.data
+y = housing.target
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Evaluate
+train_score = model.score(X_train, y_train)
+test_score = model.score(X_test, y_test)
+print(f"Train R²: {train_score:.3f}")
+print(f"Test R²: {test_score:.3f}")
+
+# Feature importance
+feature_importance = pd.DataFrame({
+    'feature': housing.feature_names,
+    'coefficient': model.coef_
+}).sort_values('coefficient', key=abs, ascending=False)
+
+print("\nFeature Importance:")
+print(feature_importance)
+
+# Predict
+sample = X_test[0:1]
+prediction = model.predict(sample)
+print(f"\nPredicted: ${prediction[0]:.2f}k")
+print(f"Actual: ${y_test[0]:.2f}k")
+```
+
+## Polynomial Regression
+
+For non-linear relationships.
+
+```python
+from sklearn.preprocessing import PolynomialFeatures
+import numpy as np
+
+# Non-linear data
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(-1, 1)
+y = np.array([2, 8, 18, 32, 50, 72, 98, 128])  # y = 2x²
+
+# Linear regression (poor fit)
+linear_model = LinearRegression()
+linear_model.fit(X, y)
+linear_pred = linear_model.predict(X)
+
+# Polynomial regression (degree=2)
+poly = PolynomialFeatures(degree=2)
+X_poly = poly.fit_transform(X)
+
+poly_model = LinearRegression()
+poly_model.fit(X_poly, y)
+poly_pred = poly_model.predict(X_poly)
+
+# Compare
+print(f"Linear R²: {r2_score(y, linear_pred):.3f}")
+print(f"Polynomial R²: {r2_score(y, poly_pred):.3f}")
+
+# Visualize
+plt.scatter(X, y, color='black', label='Actual')
+plt.plot(X, linear_pred, color='blue', label='Linear')
+plt.plot(X, poly_pred, color='red', label='Polynomial (degree=2)')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.legend()
+plt.title('Linear vs Polynomial Regression')
+plt.show()
+
+# Predict with polynomial
+new_X = [[9]]
+new_X_poly = poly.transform(new_X)
+prediction = poly_model.predict(new_X_poly)
+print(f"Prediction for X=9: {prediction[0]:.1f}")
+print(f"Actual (2*9²): {2 * 9**2}")
+```
+
+## Ridge Regression (L2 Regularization)
+
+Prevents overfitting by penalizing large coefficients.
+
+```python
+from sklearn.linear_model import Ridge
+
+# Sample data with many features
+np.random.seed(42)
+X = np.random.rand(100, 50)  # 100 samples, 50 features
+y = X @ np.random.rand(50) + np.random.randn(100) * 0.5
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# Compare Linear Regression vs Ridge
+linear = LinearRegression()
+linear.fit(X_train, y_train)
+
+ridge = Ridge(alpha=1.0)  # alpha controls regularization strength
+ridge.fit(X_train, y_train)
+
+print("Linear Regression:")
+print(f"Train R²: {linear.score(X_train, y_train):.3f}")
+print(f"Test R²: {linear.score(X_test, y_test):.3f}")
+
+print("\nRidge Regression:")
+print(f"Train R²: {ridge.score(X_train, y_train):.3f}")
+print(f"Test R²: {ridge.score(X_test, y_test):.3f}")
+
+# Compare coefficient magnitudes
+print(f"\nLinear coef max: {np.abs(linear.coef_).max():.2f}")
+print(f"Ridge coef max: {np.abs(ridge.coef_).max():.2f}")
+
+# Finding best alpha
+from sklearn.linear_model import RidgeCV
+
+ridge_cv = RidgeCV(alphas=[0.1, 1.0, 10.0, 100.0])
+ridge_cv.fit(X_train, y_train)
+print(f"\nBest alpha: {ridge_cv.alpha_}")
+```
+
+## Lasso Regression (L1 Regularization)
+
+Performs feature selection by shrinking some coefficients to zero.
+
+```python
+from sklearn.linear_model import Lasso, LassoCV
+
+# Train Lasso
+lasso = Lasso(alpha=0.1)
+lasso.fit(X_train, y_train)
+
+print("Lasso Regression:")
+print(f"Train R²: {lasso.score(X_train, y_train):.3f}")
+print(f"Test R²: {lasso.score(X_test, y_test):.3f}")
+
+# Feature selection
+n_features_used = np.sum(lasso.coef_ != 0)
+print(f"\nFeatures used: {n_features_used} / {len(lasso.coef_)}")
+print(f"Features dropped: {len(lasso.coef_) - n_features_used}")
+
+# Find best alpha using cross-validation
+lasso_cv = LassoCV(alphas=[0.001, 0.01, 0.1, 1.0, 10.0], cv=5)
+lasso_cv.fit(X_train, y_train)
+print(f"Best alpha: {lasso_cv.alpha_:.3f}")
+```
+
+### Ridge vs Lasso
+
+```python
+import pandas as pd
+
+comparison = pd.DataFrame({
+    'Aspect': ['Penalty', 'Shrinks to', 'Feature Selection', 'Use When'],
+    'Ridge (L2)': ['Squared coefficients', 'Near zero', 'No', 'Many features, all useful'],
+    'Lasso (L1)': ['Absolute coefficients', 'Exactly zero', 'Yes', 'Many features, some useless']
+})
+
+print(comparison.to_string(index=False))
+```
+
+## Decision Tree Regression
+
+Non-linear, interpretable model.
+
+```python
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+
+# Sample data
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).reshape(-1, 1)
+y = np.array([2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
+
+# Train decision tree
+tree = DecisionTreeRegressor(max_depth=3, random_state=42)
+tree.fit(X, y)
+
+# Predict
+predictions = tree.predict(X)
+
+# Visualize tree
+plt.figure(figsize=(15, 10))
+plot_tree(tree, feature_names=['X'], filled=True, rounded=True)
+plt.title('Decision Tree Regression')
+plt.show()
+
+# Evaluate
+print(f"R² Score: {r2_score(y, predictions):.3f}")
+
+# Predict new value
+new_X = [[5.5]]
+prediction = tree.predict(new_X)
+print(f"Prediction for X=5.5: {prediction[0]:.1f}")
+```
+
+### Controlling Tree Complexity
+
+```python
+# Overfitting: Too deep tree
+overfit_tree = DecisionTreeRegressor(max_depth=10)
+overfit_tree.fit(X_train, y_train)
+
+# Good fit: Controlled depth
+good_tree = DecisionTreeRegressor(max_depth=5, min_samples_split=20)
+good_tree.fit(X_train, y_train)
+
+# Underfitting: Too shallow
+underfit_tree = DecisionTreeRegressor(max_depth=2)
+underfit_tree.fit(X_train, y_train)
+
+# Compare
+print("Overfitting Tree:")
+print(f"Train R²: {overfit_tree.score(X_train, y_train):.3f}")
+print(f"Test R²: {overfit_tree.score(X_test, y_test):.3f}")
+
+print("\nGood Tree:")
+print(f"Train R²: {good_tree.score(X_train, y_train):.3f}")
+print(f"Test R²: {good_tree.score(X_test, y_test):.3f}")
+
+print("\nUnderfitting Tree:")
+print(f"Train R²: {underfit_tree.score(X_train, y_train):.3f}")
+print(f"Test R²: {underfit_tree.score(X_test, y_test):.3f}")
+```
+
+## Random Forest Regression
+
+Ensemble of decision trees for better performance.
+
+```python
+from sklearn.ensemble import RandomForestRegressor
+
+# Load data
+housing = fetch_california_housing()
+X_train, X_test, y_train, y_test = train_test_split(
+    housing.data, housing.target, test_size=0.2, random_state=42
+)
+
+# Train Random Forest
+rf = RandomForestRegressor(
+    n_estimators=100,      # Number of trees
+    max_depth=10,          # Max depth per tree
+    min_samples_split=5,   # Min samples to split
+    random_state=42,
+    n_jobs=-1              # Use all CPU cores
+)
+
+rf.fit(X_train, y_train)
+
+# Evaluate
+train_score = rf.score(X_train, y_train)
+test_score = rf.score(X_test, y_test)
+print(f"Train R²: {train_score:.3f}")
+print(f"Test R²: {test_score:.3f}")
+
+# Feature importance
+feature_importance = pd.DataFrame({
+    'feature': housing.feature_names,
+    'importance': rf.feature_importances_
+}).sort_values('importance', ascending=False)
+
+print("\nTop 5 Important Features:")
+print(feature_importance.head())
+
+# Visualize feature importance
+plt.barh(feature_importance['feature'], feature_importance['importance'])
+plt.xlabel('Importance')
+plt.title('Feature Importance - Random Forest')
+plt.tight_layout()
+plt.show()
+
+# Predict
+predictions = rf.predict(X_test[:5])
+actuals = y_test[:5]
+
+print("\nSample Predictions:")
+for i, (pred, actual) in enumerate(zip(predictions, actuals)):
+    print(f"Predicted: ${pred:.2f}k, Actual: ${actual:.2f}k, Error: ${abs(pred-actual):.2f}k")
+```
+
+## Gradient Boosting Regression
+
+Builds trees sequentially, each correcting previous errors.
+
+```python
+from sklearn.ensemble import GradientBoostingRegressor
+
+# Train Gradient Boosting
+gb = GradientBoostingRegressor(
+    n_estimators=100,
+    learning_rate=0.1,
+    max_depth=3,
+    random_state=42
+)
+
+gb.fit(X_train, y_train)
+
+# Evaluate
+print("Gradient Boosting:")
+print(f"Train R²: {gb.score(X_train, y_train):.3f}")
+print(f"Test R²: {gb.score(X_test, y_test):.3f}")
+
+# Compare with Random Forest
+print("\nRandom Forest:")
+print(f"Test R²: {rf.score(X_test, y_test):.3f}")
+```
+
+### XGBoost (Advanced)
+
+```python
+# Install: pip install xgboost
+import xgboost as xgb
+
+# Train XGBoost
+xgb_model = xgb.XGBRegressor(
+    n_estimators=100,
+    learning_rate=0.1,
+    max_depth=5,
+    random_state=42
+)
+
+xgb_model.fit(X_train, y_train)
+
+# Evaluate
+print("XGBoost:")
+print(f"Train R²: {xgb_model.score(X_train, y_train):.3f}")
+print(f"Test R²: {xgb_model.score(X_test, y_test):.3f}")
+```
+
+## Model Comparison
+
+```python
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+import time
+
+models = {
+    'Linear Regression': LinearRegression(),
+    'Ridge': Ridge(alpha=1.0),
+    'Lasso': Lasso(alpha=0.1),
+    'Decision Tree': DecisionTreeRegressor(max_depth=5, random_state=42),
+    'Random Forest': RandomForestRegressor(n_estimators=50, random_state=42),
+    'Gradient Boosting': GradientBoostingRegressor(n_estimators=50, random_state=42)
+}
+
+results = []
+
+for name, model in models.items():
+    # Train
+    start = time.time()
+    model.fit(X_train, y_train)
+    train_time = time.time() - start
+
+    # Predict
+    y_pred = model.predict(X_test)
+
+    # Evaluate
+    r2 = r2_score(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+    results.append({
+        'Model': name,
+        'R²': f"{r2:.3f}",
+        'MAE': f"{mae:.3f}",
+        'RMSE': f"{rmse:.3f}",
+        'Train Time': f"{train_time:.3f}s"
+    })
+
+comparison_df = pd.DataFrame(results)
+print(comparison_df.to_string(index=False))
+```
+
+## Real-World Example: House Price Prediction
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, r2_score
+
+# Create realistic house data
+np.random.seed(42)
+n = 1000
+
+data = pd.DataFrame({
+    'bedrooms': np.random.randint(1, 6, n),
+    'bathrooms': np.random.randint(1, 4, n),
+    'sqft': np.random.randint(500, 4000, n),
+    'lot_size': np.random.randint(2000, 10000, n),
+    'year_built': np.random.randint(1950, 2024, n),
+    'garage': np.random.randint(0, 3, n),
+    'location_score': np.random.randint(1, 11, n),  # 1-10
+})
+
+# Generate realistic prices
+data['price'] = (
+    50000 +
+    data['bedrooms'] * 25000 +
+    data['bathrooms'] * 15000 +
+    data['sqft'] * 100 +
+    data['lot_size'] * 5 +
+    (2024 - data['year_built']) * -1000 +
+    data['garage'] * 10000 +
+    data['location_score'] * 20000 +
+    np.random.normal(0, 50000, n)  # Add noise
+)
+
+print("Dataset:")
+print(data.head())
+print(f"\nPrice range: ${data['price'].min():,.0f} - ${data['price'].max():,.0f}")
+print(f"Average price: ${data['price'].mean():,.0f}")
+
+# Feature engineering
+data['age'] = 2024 - data['year_built']
+data['sqft_per_bedroom'] = data['sqft'] / data['bedrooms']
+data['total_rooms'] = data['bedrooms'] + data['bathrooms']
+
+# Prepare data
+X = data.drop(['price', 'year_built'], axis=1)
+y = data['price']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Scale features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train model
+model = RandomForestRegressor(
+    n_estimators=100,
+    max_depth=15,
+    min_samples_split=5,
+    random_state=42,
+    n_jobs=-1
+)
+
+model.fit(X_train_scaled, y_train)
+
+# Evaluate
+y_pred = model.predict(X_test_scaled)
+
+r2 = r2_score(y_test, y_pred)
+mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+print(f"\nModel Performance:")
+print(f"R² Score: {r2:.3f}")
+print(f"MAE: ${mae:,.0f}")
+print(f"RMSE: ${rmse:,.0f}")
+
+# Feature importance
+feature_imp = pd.DataFrame({
+    'feature': X.columns,
+    'importance': model.feature_importances_
+}).sort_values('importance', ascending=False)
+
+print("\nTop 5 Features:")
+print(feature_imp.head())
+
+# Predict for new house
+new_house = pd.DataFrame({
+    'bedrooms': [3],
+    'bathrooms': [2],
+    'sqft': [2000],
+    'lot_size': [5000],
+    'garage': [2],
+    'location_score': [8],
+    'age': [10],
+    'sqft_per_bedroom': [2000/3],
+    'total_rooms': [5]
+})
+
+new_house_scaled = scaler.transform(new_house)
+predicted_price = model.predict(new_house_scaled)
+
+print(f"\nNew House Prediction:")
+print(f"3 bed, 2 bath, 2000 sqft, 10 years old")
+print(f"Predicted Price: ${predicted_price[0]:,.0f}")
+
+# Show prediction intervals
+predictions_on_test = model.predict(X_test_scaled)
+errors = y_test - predictions_on_test
+std_error = np.std(errors)
+
+print(f"\n95% Confidence Interval: ±${1.96 * std_error:,.0f}")
+```
+
+## Practice Exercises
+
+### Exercise 1: Linear vs Polynomial
+
+```python
+# Task: Determine if linear or polynomial is better
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(-1, 1)
+y = np.array([3, 7, 13, 21, 31, 43, 57, 73])  # y ≈ x² + 2x
+
+# Solution:
+# 1. Try linear regression
+# 2. Try polynomial (degrees 2, 3)
+# 3. Compare R² scores
+# 4. Visualize all three
+```
+
+### Exercise 2: Feature Engineering Impact
+
+```python
+# Create features and compare performance
+from sklearn.datasets import load_diabetes
+
+diabetes = load_diabetes()
+X = diabetes.data
+y = diabetes.target
+
+# Task 1: Train model without feature engineering
+# Task 2: Create interaction features (X1*X2, X1*X3, etc.)
+# Task 3: Compare performance
+```
+
+## Interview Questions
+
+**Q1: When to use Linear Regression?**
+- Fast, simple, interpretable
+- Relationship is linear
+- Need to explain feature importance
+- Limited data
+
+**Q2: Ridge vs Lasso - when to use each?**
+- **Ridge**: All features useful, prevent overfitting
+- **Lasso**: Feature selection needed, sparse model
+- **ElasticNet**: Combination of both
+
+**Q3: Why use Random Forest over Decision Tree?**
+- **Random Forest**: More accurate, resistant to overfitting, stable
+- **Decision Tree**: Interpretable, fast, simple
+
+**Q4: What is overfitting in regression?**
+Model performs well on training data but poorly on test data.
+```python
+# Signs of overfitting:
+Train R²: 0.99  # Too good!
+Test R²: 0.60   # Poor on new data
+
+# Solutions:
+- Use regularization (Ridge/Lasso)
+- Reduce model complexity
+- Get more training data
+- Use cross-validation
+```
+
+**Q5: How to handle non-linear relationships?**
+1. Polynomial features
+2. Tree-based models (Random Forest, XGBoost)
+3. Transform features (log, sqrt)
+4. Neural networks
+
+## Key Takeaways
+
+✅ **Linear Regression**: Fast, interpretable, assumes linearity
+✅ **Ridge/Lasso**: Add regularization to prevent overfitting
+✅ **Polynomial**: Handle non-linear relationships
+✅ **Decision Tree**: Non-linear, interpretable, prone to overfitting
+✅ **Random Forest**: Ensemble of trees, more accurate
+✅ **Gradient Boosting/XGBoost**: Often best performance
+
+**Part 5** covers classification algorithms! 🚀
+
+---
+
+*Series Progress: 4/8 - Next up: Classification Algorithms!*

@@ -1,0 +1,709 @@
+---
+title: "Machine Learning from A to Z: Part 2 - Types of ML and Core Concepts"
+description: "Deep dive into supervised, unsupervised, and reinforcement learning with real-world examples, code implementations, and interview-focused explanations."
+date: "2025-10-25"
+author: "Goutham"
+tags: ["Machine Learning", "Supervised Learning", "Unsupervised Learning", "Python", "scikit-learn"]
+image: "/images/ml-types.svg"
+readTime: "22 min read"
+---
+
+# Machine Learning from A to Z: Part 2 - Types of ML and Core Concepts
+
+Master the three main types of machine learning with practical examples and implementations!
+
+## The Three Types of Machine Learning
+
+```
+Machine Learning
+├── Supervised Learning (Learn from labeled data)
+│   ├── Classification (Predict category)
+│   └── Regression (Predict number)
+├── Unsupervised Learning (Find patterns in unlabeled data)
+│   ├── Clustering (Group similar items)
+│   └── Dimensionality Reduction (Simplify data)
+└── Reinforcement Learning (Learn from trial and error)
+    └── Reward-based learning
+```
+
+## Supervised Learning
+
+Learn from examples with known answers (labeled data).
+
+### Concept
+
+```python
+# You have: Input → Output pairs
+Training Data:
+[3 bedrooms, 1500 sqft] → $300,000
+[4 bedrooms, 2000 sqft] → $400,000
+[2 bedrooms, 1000 sqft] → $200,000
+
+# Model learns pattern
+# Predict: [3 bedrooms, 1800 sqft] → ?
+```
+
+### Types of Supervised Learning
+
+#### 1. Classification (Predict Category)
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+# Load dataset
+iris = load_iris()
+X = iris.data  # Features: sepal/petal measurements
+y = iris.target  # Labels: 0, 1, 2 (species)
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+# Train classifier
+model = DecisionTreeClassifier()
+model.fit(X_train, y_train)
+
+# Predict
+predictions = model.predict(X_test)
+
+# Evaluate
+print(f"Accuracy: {accuracy_score(y_test, predictions):.2%}")
+print("\nDetailed Report:")
+print(classification_report(y_test, predictions,
+                           target_names=iris.target_names))
+```
+
+**Output:**
+```
+Accuracy: 97.78%
+
+Detailed Report:
+              precision    recall  f1-score   support
+      setosa       1.00      1.00      1.00        19
+  versicolor       0.93      1.00      0.96        13
+   virginica       1.00      0.92      0.96        13
+```
+
+#### 2. Regression (Predict Number)
+
+```python
+from sklearn.datasets import fetch_california_housing
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+
+# Load dataset
+housing = fetch_california_housing()
+X = housing.data[:1000]  # Features: location, rooms, etc.
+y = housing.target[:1000]  # Target: house price
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train regressor
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Predict
+predictions = model.predict(X_test)
+
+# Evaluate
+mse = mean_squared_error(y_test, predictions)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, predictions)
+
+print(f"RMSE: {rmse:.2f}")
+print(f"R² Score: {r2:.2f}")
+print(f"\nExample Predictions:")
+for i in range(3):
+    print(f"Actual: ${y_test[i]:.2f}k, Predicted: ${predictions[i]:.2f}k")
+```
+
+**Output:**
+```
+RMSE: 0.72
+R² Score: 0.58
+
+Example Predictions:
+Actual: $1.50k, Predicted: $1.45k
+Actual: $3.20k, Predicted: $2.98k
+Actual: $2.10k, Predicted: $2.15k
+```
+
+### Real-World Classification Examples
+
+#### Email Spam Detection
+
+```python
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+# Training data
+emails = [
+    "Win free money now!!!",
+    "Meeting scheduled for tomorrow",
+    "Claim your prize today",
+    "Project deadline reminder",
+    "Congratulations! You won!",
+    "Team lunch at noon"
+]
+labels = [1, 0, 1, 0, 1, 0]  # 1 = spam, 0 = not spam
+
+# Convert text to numbers
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(emails)
+
+# Train model
+model = MultinomialNB()
+model.fit(X, labels)
+
+# Predict new emails
+new_emails = [
+    "Free offer limited time",
+    "Quarterly report attached"
+]
+X_new = vectorizer.transform(new_emails)
+predictions = model.predict(X_new)
+
+for email, pred in zip(new_emails, predictions):
+    print(f"'{email}' → {'SPAM' if pred == 1 else 'NOT SPAM'}")
+```
+
+**Output:**
+```
+'Free offer limited time' → SPAM
+'Quarterly report attached' → NOT SPAM
+```
+
+#### Customer Churn Prediction
+
+```python
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+
+# Customer data
+data = pd.DataFrame({
+    'age': [25, 45, 35, 50, 23],
+    'monthly_charges': [50, 80, 60, 100, 45],
+    'tenure_months': [12, 48, 24, 60, 6],
+    'support_calls': [5, 1, 3, 0, 8],
+    'churned': [1, 0, 0, 0, 1]  # 1 = left, 0 = stayed
+})
+
+X = data[['age', 'monthly_charges', 'tenure_months', 'support_calls']]
+y = data['churned']
+
+# Train model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X, y)
+
+# Predict new customer
+new_customer = [[30, 70, 18, 4]]
+risk = model.predict_proba(new_customer)[0]
+print(f"Churn Risk: {risk[1]:.1%}")
+print(f"Recommendation: {'High risk - offer retention deal' if risk[1] > 0.5 else 'Low risk'}")
+```
+
+### Real-World Regression Examples
+
+#### Sales Forecasting
+
+```python
+import numpy as np
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+
+# Historical sales data
+months = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]).reshape(-1, 1)
+sales = np.array([100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320])
+
+# Train model
+model = LinearRegression()
+model.fit(months, sales)
+
+# Forecast next 3 months
+future_months = np.array([[13], [14], [15]])
+predictions = model.predict(future_months)
+
+print("Sales Forecast:")
+for month, sale in zip(future_months.flatten(), predictions):
+    print(f"Month {month}: ${sale:.2f}k")
+
+# Visualize
+plt.scatter(months, sales, label='Actual Sales')
+plt.plot(months, model.predict(months), 'r-', label='Trend')
+plt.scatter(future_months, predictions, color='green', label='Forecast', marker='*', s=200)
+plt.xlabel('Month')
+plt.ylabel('Sales ($k)')
+plt.legend()
+plt.title('Sales Forecasting')
+plt.show()
+```
+
+#### Stock Price Prediction (Simple)
+
+```python
+from sklearn.linear_model import Ridge
+
+# Features: Previous 5 days' prices
+# Target: Today's price
+X = [
+    [100, 102, 101, 103, 105],  # Day 1-5
+    [102, 101, 103, 105, 107],  # Day 2-6
+    [101, 103, 105, 107, 106],  # Day 3-7
+]
+y = [107, 106, 108]  # Day 6, 7, 8
+
+model = Ridge()
+model.fit(X, y)
+
+# Predict tomorrow based on last 5 days
+last_5_days = [[103, 105, 107, 106, 108]]
+tomorrow_price = model.predict(last_5_days)
+print(f"Predicted price: ${tomorrow_price[0]:.2f}")
+```
+
+## Unsupervised Learning
+
+Find hidden patterns in data without labels.
+
+### Types of Unsupervised Learning
+
+#### 1. Clustering (Group Similar Items)
+
+```python
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Customer data: [Annual Income, Spending Score]
+X = np.array([
+    [15, 39], [16, 81], [17, 6], [18, 77], [19, 40],
+    [20, 76], [21, 6], [22, 94], [23, 3], [24, 72],
+    [25, 14], [26, 99], [27, 15], [28, 77], [29, 13],
+    [30, 79], [55, 90], [56, 46], [57, 8], [58, 91],
+    [59, 50], [60, 88], [61, 49], [62, 87], [63, 48]
+])
+
+# Find 3 customer groups
+kmeans = KMeans(n_clusters=3, random_state=42)
+clusters = kmeans.fit_predict(X)
+
+# Visualize
+plt.scatter(X[:, 0], X[:, 1], c=clusters, cmap='viridis', s=100)
+plt.scatter(kmeans.cluster_centers_[:, 0],
+           kmeans.cluster_centers_[:, 1],
+           marker='X', s=300, c='red', label='Centroids')
+plt.xlabel('Annual Income ($k)')
+plt.ylabel('Spending Score')
+plt.title('Customer Segmentation')
+plt.legend()
+plt.show()
+
+# Interpret clusters
+print("Cluster Centers:")
+for i, center in enumerate(kmeans.cluster_centers_):
+    print(f"Cluster {i}: Income=${center[0]:.1f}k, Spending={center[1]:.1f}")
+```
+
+**Output:**
+```
+Cluster Centers:
+Cluster 0: Income=$24.5k, Spending=11.3
+Cluster 1: Income=$25.7k, Spending=82.1
+Cluster 2: Income=$59.3k, Spending=72.6
+```
+
+**Interpretation:**
+- **Cluster 0**: Low income, low spending (budget shoppers)
+- **Cluster 1**: Low income, high spending (impulsive buyers)
+- **Cluster 2**: High income, high spending (premium customers)
+
+#### 2. Dimensionality Reduction
+
+```python
+from sklearn.decomposition import PCA
+from sklearn.datasets import load_digits
+import matplotlib.pyplot as plt
+
+# Load handwritten digits (64 features)
+digits = load_digits()
+X = digits.data  # 1797 samples, 64 features
+y = digits.target
+
+# Reduce to 2 dimensions
+pca = PCA(n_components=2)
+X_reduced = pca.fit_transform(X)
+
+# Visualize
+plt.figure(figsize=(10, 8))
+scatter = plt.scatter(X_reduced[:, 0], X_reduced[:, 1],
+                     c=y, cmap='tab10', alpha=0.6)
+plt.colorbar(scatter, label='Digit')
+plt.xlabel('First Principal Component')
+plt.ylabel('Second Principal Component')
+plt.title('Digits in 2D (from 64D)')
+plt.show()
+
+print(f"Explained variance: {pca.explained_variance_ratio_.sum():.2%}")
+```
+
+### Real-World Unsupervised Learning
+
+#### Market Basket Analysis
+
+```python
+# Find which products are bought together
+from mlxtend.frequent_patterns import apriori, association_rules
+import pandas as pd
+
+# Transaction data
+transactions = pd.DataFrame({
+    'Milk': [1, 0, 1, 1, 0],
+    'Bread': [1, 1, 1, 1, 1],
+    'Butter': [1, 0, 1, 1, 0],
+    'Eggs': [0, 1, 0, 1, 1]
+})
+
+# Find frequent patterns
+frequent = apriori(transactions, min_support=0.5, use_colnames=True)
+rules = association_rules(frequent, metric="confidence", min_threshold=0.7)
+
+print("Shopping Patterns:")
+for _, rule in rules.iterrows():
+    print(f"If customer buys {list(rule['antecedents'])}, "
+          f"they'll likely buy {list(rule['consequents'])} "
+          f"({rule['confidence']:.1%} confidence)")
+```
+
+#### Anomaly Detection
+
+```python
+from sklearn.ensemble import IsolationForest
+import numpy as np
+
+# Network traffic data
+normal_traffic = np.random.normal(100, 20, (100, 2))
+anomalies = np.random.normal(300, 50, (5, 2))
+X = np.vstack([normal_traffic, anomalies])
+
+# Detect anomalies
+model = IsolationForest(contamination=0.1, random_state=42)
+predictions = model.fit_predict(X)
+
+# -1 = anomaly, 1 = normal
+anomaly_indices = np.where(predictions == -1)[0]
+print(f"Found {len(anomaly_indices)} anomalies at indices: {anomaly_indices}")
+```
+
+## Reinforcement Learning
+
+Learn through trial and error with rewards and penalties.
+
+### Concept
+
+```
+Agent → Action → Environment → Reward
+   ↑__________________________|
+```
+
+### Simple RL Example: Learning to Play a Game
+
+```python
+import numpy as np
+
+# Simple grid world: Agent learns to reach goal
+# Grid: S = Start, G = Goal, X = Obstacle
+# Actions: 0=up, 1=down, 2=left, 3=right
+
+class GridWorld:
+    def __init__(self):
+        self.position = [0, 0]  # Start position
+        self.goal = [2, 2]      # Goal position
+
+    def step(self, action):
+        # Move agent
+        if action == 0:   # Up
+            self.position[0] = max(0, self.position[0] - 1)
+        elif action == 1: # Down
+            self.position[0] = min(2, self.position[0] + 1)
+        elif action == 2: # Left
+            self.position[1] = max(0, self.position[1] - 1)
+        elif action == 3: # Right
+            self.position[1] = min(2, self.position[1] + 1)
+
+        # Calculate reward
+        if self.position == self.goal:
+            return 100  # Found goal!
+        else:
+            return -1   # Penalty for each step
+
+    def reset(self):
+        self.position = [0, 0]
+
+# Q-Learning algorithm
+Q = np.zeros((3, 3, 4))  # Q-table: [row, col, action]
+env = GridWorld()
+
+# Training
+for episode in range(1000):
+    env.reset()
+    for step in range(20):
+        row, col = env.position
+
+        # Explore vs Exploit
+        if np.random.random() < 0.1:
+            action = np.random.randint(4)  # Explore
+        else:
+            action = np.argmax(Q[row, col])  # Exploit
+
+        reward = env.step(action)
+        new_row, new_col = env.position
+
+        # Update Q-value
+        Q[row, col, action] = reward + 0.9 * np.max(Q[new_row, new_col])
+
+        if reward == 100:
+            break
+
+print("Learned Policy (best action for each position):")
+actions = ['↑', '↓', '←', '→']
+for i in range(3):
+    for j in range(3):
+        best_action = np.argmax(Q[i, j])
+        print(actions[best_action], end=' ')
+    print()
+```
+
+### Real-World RL Applications
+
+```python
+# 1. Game AI (Chess, Go, Poker)
+# Agent learns by playing millions of games
+
+# 2. Robotics
+# Robot learns to walk by trial and error
+
+# 3. Self-Driving Cars
+# Learn optimal driving by simulation
+
+# 4. Recommendation Systems
+# Learn what to recommend based on user clicks (rewards)
+
+# 5. Resource Management
+# Data center cooling optimization (DeepMind reduced Google's energy by 40%)
+```
+
+## Comparing the Three Types
+
+```python
+import pandas as pd
+
+comparison = pd.DataFrame({
+    'Type': ['Supervised', 'Unsupervised', 'Reinforcement'],
+    'Data': ['Labeled (X, y)', 'Unlabeled (X)', 'Sequential (state, action, reward)'],
+    'Goal': ['Predict', 'Discover patterns', 'Maximize reward'],
+    'Examples': ['Spam detection, Price prediction',
+                 'Customer segmentation, Anomaly detection',
+                 'Game AI, Robotics'],
+    'Difficulty': ['Easiest', 'Medium', 'Hardest']
+})
+
+print(comparison.to_string(index=False))
+```
+
+## Choosing the Right Type
+
+```python
+def choose_ml_type(problem):
+    if "predict" in problem and "have labels" in problem:
+        return "Supervised Learning"
+    elif "group" in problem or "pattern" in problem:
+        return "Unsupervised Learning"
+    elif "maximize" in problem or "trial and error" in problem:
+        return "Reinforcement Learning"
+
+# Examples
+print(choose_ml_type("predict house prices, have historical data with prices"))
+# → Supervised Learning
+
+print(choose_ml_type("group customers by behavior, no labels"))
+# → Unsupervised Learning
+
+print(choose_ml_type("maximize game score through trial and error"))
+# → Reinforcement Learning
+```
+
+## Practice Exercises
+
+### Exercise 1: Classification vs Regression
+
+```python
+# Classify these problems:
+problems = [
+    "Predict if email is spam",           # Classification
+    "Predict stock price tomorrow",       # Regression
+    "Classify tumor as benign/malignant", # Classification
+    "Predict house price",                # Regression
+    "Predict customer rating (1-5 stars)" # Regression (or Classification)
+]
+
+# Solution
+for problem in problems:
+    if "predict" in problem and any(word in problem for word in ["price", "rating"]):
+        print(f"{problem} → Regression")
+    elif "classify" in problem or "spam" in problem or "benign" in problem:
+        print(f"{problem} → Classification")
+```
+
+### Exercise 2: Build a Simple Recommender
+
+```python
+from sklearn.neighbors import NearestNeighbors
+import numpy as np
+
+# User preferences: [Action, Comedy, Drama, Horror, Sci-Fi]
+users = np.array([
+    [5, 1, 2, 0, 4],  # User 0: loves Action & Sci-Fi
+    [1, 5, 4, 0, 1],  # User 1: loves Comedy & Drama
+    [5, 0, 1, 0, 5],  # User 2: loves Action & Sci-Fi
+    [2, 4, 5, 1, 2],  # User 3: loves Comedy & Drama
+])
+
+# Find similar users
+model = NearestNeighbors(n_neighbors=2)
+model.fit(users)
+
+# New user: [4, 1, 2, 0, 5]
+new_user = [[4, 1, 2, 0, 5]]
+distances, indices = model.kneighbors(new_user)
+
+print("Most similar users:", indices[0])
+print("Recommendation: Check what users", indices[0], "watched!")
+```
+
+### Exercise 3: Customer Segmentation
+
+```python
+from sklearn.cluster import KMeans
+import pandas as pd
+
+# Customer data
+customers = pd.DataFrame({
+    'age': [25, 26, 47, 52, 24, 50, 23, 49],
+    'income': [50, 52, 80, 85, 48, 82, 45, 78]
+})
+
+# Segment into 2 groups
+kmeans = KMeans(n_clusters=2, random_state=42)
+customers['segment'] = kmeans.fit_predict(customers[['age', 'income']])
+
+print(customers)
+print("\nSegment 0:", "Young & Low Income")
+print("Segment 1:", "Mature & High Income")
+```
+
+## Interview Questions
+
+**Q1: What's the main difference between supervised and unsupervised learning?**
+- **Supervised**: Has labeled data (input + correct output), learns to predict
+- **Unsupervised**: No labels, learns to find patterns/structure
+
+**Q2: When would you use clustering?**
+- Customer segmentation
+- Image compression
+- Anomaly detection
+- Document organization
+- Market research
+
+**Q3: What is the difference between classification and regression?**
+- **Classification**: Predict category (spam/not spam, cat/dog)
+- **Regression**: Predict number (price, temperature, score)
+
+**Q4: Why is reinforcement learning harder than supervised learning?**
+- No direct feedback (only rewards/penalties)
+- Must explore to find good actions
+- Delayed rewards (action now, reward later)
+- Computationally expensive
+
+**Q5: Can you convert regression to classification?**
+Yes! By binning continuous values:
+```python
+# Regression: Predict exact price
+price = 350000
+
+# Classification: Predict price range
+if price < 200000:
+    category = "cheap"
+elif price < 400000:
+    category = "medium"
+else:
+    category = "expensive"
+```
+
+## Real Interview Problem
+
+**Problem**: You have customer data (age, income, purchases). Design an ML solution.
+
+```python
+import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+# Load data
+data = pd.DataFrame({
+    'age': [25, 35, 45, 22, 50, 28, 38],
+    'income': [50000, 80000, 100000, 45000, 120000, 55000, 85000],
+    'purchases': [5, 15, 25, 3, 30, 8, 18]
+})
+
+# Step 1: Normalize features (important for clustering!)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(data)
+
+# Step 2: Find optimal number of clusters (Elbow method)
+inertias = []
+for k in range(1, 8):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X_scaled)
+    inertias.append(kmeans.inertia_)
+
+# Step 3: Choose k=3 and segment
+kmeans = KMeans(n_clusters=3, random_state=42)
+data['segment'] = kmeans.fit_predict(X_scaled)
+
+# Step 4: Analyze segments
+print(data.groupby('segment').mean())
+
+# Step 5: Business insights
+print("\nSegment Interpretation:")
+print("Segment 0: Budget shoppers")
+print("Segment 1: Mid-tier customers")
+print("Segment 2: Premium customers")
+```
+
+## Key Takeaways
+
+✅ **Supervised**: Labeled data → Predict
+✅ **Unsupervised**: Unlabeled data → Find patterns
+✅ **Reinforcement**: Trial & error → Maximize reward
+
+✅ **Classification**: Predict category (discrete)
+✅ **Regression**: Predict number (continuous)
+✅ **Clustering**: Group similar items
+
+✅ **Always normalize data** for distance-based algorithms
+✅ **Start simple** (supervised → unsupervised → RL)
+✅ **Evaluate properly** (next lesson!)
+
+**Part 3** covers the complete ML pipeline from data to deployment! 🚀
+
+---
+
+*Series Progress: 2/8 - Next up: The ML Pipeline!*

@@ -1,0 +1,732 @@
+---
+title: "Machine Learning from A to Z: Part 7 - Model Evaluation and Tuning"
+description: "Master evaluation metrics, cross-validation, hyperparameter tuning, GridSearchCV, RandomizedSearchCV, and avoiding overfitting. Get production-ready!"
+date: "2025-10-25"
+author: "Goutham"
+tags: ["Machine Learning", "Model Evaluation", "Hyperparameter Tuning", "Cross-Validation", "GridSearchCV"]
+image: "/images/ml-evaluation.svg"
+readTime: "26 min read"
+---
+
+# Machine Learning from A to Z: Part 7 - Model Evaluation and Tuning
+
+Optimize your models! Master evaluation metrics, cross-validation, and hyperparameter tuning.
+
+## Why Evaluation Matters
+
+```python
+# Not all metrics are equal!
+Model A: 95% accuracy (predicts all "not fraud")
+Model B: 85% accuracy (actually catches fraud)
+
+# Which is better? Depends on the metric!
+```
+
+## Classification Metrics
+
+### Confusion Matrix
+
+```python
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load data
+cancer = load_breast_cancer()
+X_train, X_test, y_train, y_test = train_test_split(
+    cancer.data, cancer.target, test_size=0.2, random_state=42
+)
+
+# Train model
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+# Confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+print("Confusion Matrix:")
+print(cm)
+
+# Visualize
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+           xticklabels=['Malignant', 'Benign'],
+           yticklabels=['Malignant', 'Benign'])
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Explanation:
+# [[TN  FP]
+#  [FN  TP]]
+#
+# TN = True Negative (correctly predicted negative)
+# FP = False Positive (predicted positive, actually negative)
+# FN = False Negative (predicted negative, actually positive)
+# TP = True Positive (correctly predicted positive)
+```
+
+### Accuracy, Precision, Recall, F1-Score
+
+```python
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# Calculate metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+
+print(f"Accuracy:  {accuracy:.2%}")   # (TP + TN) / Total
+print(f"Precision: {precision:.2%}")  # TP / (TP + FP)
+print(f"Recall:    {recall:.2%}")     # TP / (TP + FN)
+print(f"F1-Score:  {f1:.2%}")         # 2 * (Precision * Recall) / (Precision + Recall)
+
+# Classification report (all at once)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred,
+                           target_names=cancer.target_names))
+```
+
+### When to Use Each Metric
+
+```python
+import pandas as pd
+
+metrics_guide = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+    'Formula': ['(TP+TN)/Total', 'TP/(TP+FP)', 'TP/(TP+FN)', '2*P*R/(P+R)'],
+    'Use When': [
+        'Balanced classes',
+        'False positives costly (spam detection)',
+        'False negatives costly (cancer detection)',
+        'Need balance between precision and recall'
+    ],
+    'Example': [
+        'Iris classification',
+        'Email spam (few real positives)',
+        'Disease screening (catch all cases)',
+        'General purpose'
+    ]
+})
+
+print(metrics_guide.to_string(index=False))
+```
+
+### ROC Curve and AUC
+
+```python
+from sklearn.metrics import roc_curve, roc_auc_score
+
+# Get probability predictions
+y_pred_proba = model.predict_proba(X_test)[:, 1]
+
+# Calculate ROC curve
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+auc = roc_auc_score(y_test, y_pred_proba)
+
+# Plot
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {auc:.2f})')
+plt.plot([0, 1], [0, 1], 'k--', label='Random Classifier')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+print(f"AUC Score: {auc:.2f}")
+# AUC = 1.0 → Perfect classifier
+# AUC = 0.5 → Random classifier
+# AUC > 0.8 → Good model
+```
+
+### Precision-Recall Curve
+
+```python
+from sklearn.metrics import precision_recall_curve, average_precision_score
+
+# Calculate PR curve
+precision_curve, recall_curve, thresholds = precision_recall_curve(y_test, y_pred_proba)
+avg_precision = average_precision_score(y_test, y_pred_proba)
+
+# Plot
+plt.figure(figsize=(8, 6))
+plt.plot(recall_curve, precision_curve, label=f'PR Curve (AP = {avg_precision:.2f})')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Use PR curve for imbalanced datasets (better than ROC)
+```
+
+## Regression Metrics
+
+```python
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression
+from sklearn.datasets import fetch_california_housing
+
+# Load data
+housing = fetch_california_housing()
+X_train, X_test, y_train, y_test = train_test_split(
+    housing.data, housing.target, test_size=0.2, random_state=42
+)
+
+# Train model
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+# Calculate metrics
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, y_pred)
+
+print(f"MAE:  {mae:.3f}")   # Average absolute error
+print(f"MSE:  {mse:.3f}")   # Average squared error
+print(f"RMSE: {rmse:.3f}")  # Square root of MSE (same units as target)
+print(f"R²:   {r2:.3f}")    # Proportion of variance explained (0-1)
+
+# Interpretation:
+# MAE: On average, predictions are off by $X
+# RMSE: Penalizes large errors more than MAE
+# R²: 1.0 = perfect, 0.0 = no better than mean
+```
+
+### Visualizing Regression Results
+
+```python
+# Actual vs Predicted
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test, y_pred, alpha=0.5)
+plt.plot([y_test.min(), y_test.max()],
+         [y_test.min(), y_test.max()],
+         'r--', lw=2, label='Perfect predictions')
+plt.xlabel('Actual')
+plt.ylabel('Predicted')
+plt.title('Actual vs Predicted Values')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Residuals (errors)
+residuals = y_test - y_pred
+
+plt.figure(figsize=(10, 6))
+plt.scatter(y_pred, residuals, alpha=0.5)
+plt.axhline(y=0, color='r', linestyle='--')
+plt.xlabel('Predicted')
+plt.ylabel('Residuals')
+plt.title('Residual Plot')
+plt.grid(True)
+plt.show()
+```
+
+## Cross-Validation
+
+Avoid overfitting by testing on multiple splits.
+
+### K-Fold Cross-Validation
+
+```python
+from sklearn.model_selection import cross_val_score, KFold
+
+# Basic cross-validation
+scores = cross_val_score(model, X_train, y_train, cv=5, scoring='accuracy')
+
+print("Cross-Validation Scores:", scores)
+print(f"Mean: {scores.mean():.2%}")
+print(f"Std:  {scores.std():.2%}")
+
+# Manual K-Fold
+kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+
+for fold, (train_idx, val_idx) in enumerate(kfold.split(X_train)):
+    X_fold_train, X_fold_val = X_train[train_idx], X_train[val_idx]
+    y_fold_train, y_fold_val = y_train[train_idx], y_train[val_idx]
+
+    model.fit(X_fold_train, y_fold_train)
+    score = model.score(X_fold_val, y_fold_val)
+    print(f"Fold {fold + 1}: {score:.2%}")
+```
+
+### Stratified K-Fold (For Classification)
+
+```python
+from sklearn.model_selection import StratifiedKFold
+
+# Preserves class distribution in each fold
+skfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(model, X_train, y_train, cv=skfold, scoring='accuracy')
+
+print(f"Stratified CV Mean: {scores.mean():.2%}")
+```
+
+### Cross-Validation for Multiple Metrics
+
+```python
+from sklearn.model_selection import cross_validate
+
+# Evaluate multiple metrics at once
+scoring = ['accuracy', 'precision', 'recall', 'f1']
+cv_results = cross_validate(model, X_train, y_train,
+                            cv=5, scoring=scoring,
+                            return_train_score=True)
+
+for metric in scoring:
+    train_scores = cv_results[f'train_{metric}']
+    test_scores = cv_results[f'test_{metric}']
+    print(f"{metric.capitalize()}:")
+    print(f"  Train: {train_scores.mean():.2%} (±{train_scores.std():.2%})")
+    print(f"  Test:  {test_scores.mean():.2%} (±{test_scores.std():.2%})")
+```
+
+## Hyperparameter Tuning
+
+### Grid Search
+
+```python
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+
+# Define parameter grid
+param_grid = {
+    'n_estimators': [50, 100, 200],
+    'max_depth': [5, 10, 15, None],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+
+# Create model
+rf = RandomForestClassifier(random_state=42)
+
+# Grid search
+grid_search = GridSearchCV(
+    rf,
+    param_grid,
+    cv=5,
+    scoring='accuracy',
+    n_jobs=-1,      # Use all CPU cores
+    verbose=1
+)
+
+# Fit (tests all combinations)
+grid_search.fit(X_train, y_train)
+
+# Best parameters
+print("Best parameters:", grid_search.best_params_)
+print(f"Best CV score: {grid_search.best_score_:.2%}")
+
+# Best model
+best_model = grid_search.best_estimator_
+test_score = best_model.score(X_test, y_test)
+print(f"Test score: {test_score:.2%}")
+
+# View all results
+results = pd.DataFrame(grid_search.cv_results_)
+print("\nTop 5 parameter combinations:")
+print(results[['params', 'mean_test_score', 'rank_test_score']]
+      .sort_values('rank_test_score')
+      .head())
+```
+
+### Randomized Search (Faster)
+
+```python
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint, uniform
+
+# Define parameter distributions
+param_dist = {
+    'n_estimators': randint(50, 500),
+    'max_depth': randint(5, 50),
+    'min_samples_split': randint(2, 20),
+    'min_samples_leaf': randint(1, 10),
+    'max_features': uniform(0.1, 0.9)
+}
+
+# Randomized search
+random_search = RandomizedSearchCV(
+    rf,
+    param_distributions=param_dist,
+    n_iter=50,          # Try 50 random combinations
+    cv=5,
+    scoring='accuracy',
+    n_jobs=-1,
+    random_state=42,
+    verbose=1
+)
+
+random_search.fit(X_train, y_train)
+
+print("Best parameters:", random_search.best_params_)
+print(f"Best CV score: {random_search.best_score_:.2%}")
+
+# Faster than GridSearch, often finds good parameters
+```
+
+### Manual Hyperparameter Tuning
+
+```python
+# Try different values manually
+from sklearn.metrics import accuracy_score
+
+results = []
+
+for n_estimators in [50, 100, 200]:
+    for max_depth in [5, 10, 15, None]:
+        model = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            random_state=42
+        )
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+
+        results.append({
+            'n_estimators': n_estimators,
+            'max_depth': max_depth,
+            'accuracy': accuracy
+        })
+
+results_df = pd.DataFrame(results).sort_values('accuracy', ascending=False)
+print("Top 5 configurations:")
+print(results_df.head())
+```
+
+## Learning Curves
+
+Diagnose overfitting and underfitting.
+
+```python
+from sklearn.model_selection import learning_curve
+
+# Generate learning curve
+train_sizes, train_scores, val_scores = learning_curve(
+    RandomForestClassifier(random_state=42),
+    X_train, y_train,
+    train_sizes=np.linspace(0.1, 1.0, 10),
+    cv=5,
+    scoring='accuracy',
+    n_jobs=-1
+)
+
+# Calculate mean and std
+train_mean = train_scores.mean(axis=1)
+train_std = train_scores.std(axis=1)
+val_mean = val_scores.mean(axis=1)
+val_std = val_scores.std(axis=1)
+
+# Plot
+plt.figure(figsize=(10, 6))
+plt.plot(train_sizes, train_mean, label='Training score', marker='o')
+plt.fill_between(train_sizes, train_mean - train_std,
+                train_mean + train_std, alpha=0.1)
+
+plt.plot(train_sizes, val_mean, label='Validation score', marker='o')
+plt.fill_between(train_sizes, val_mean - val_std,
+                val_mean + val_std, alpha=0.1)
+
+plt.xlabel('Training Set Size')
+plt.ylabel('Accuracy')
+plt.title('Learning Curve')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Interpretation:
+# - Large gap between train and val → Overfitting
+# - Both low → Underfitting
+# - Both high and close → Good fit
+# - Converging but low → Need more data or better features
+```
+
+## Validation Curve
+
+Tune a single hyperparameter.
+
+```python
+from sklearn.model_selection import validation_curve
+
+# Test different max_depth values
+param_range = range(1, 21)
+train_scores, val_scores = validation_curve(
+    RandomForestClassifier(n_estimators=50, random_state=42),
+    X_train, y_train,
+    param_name='max_depth',
+    param_range=param_range,
+    cv=5,
+    scoring='accuracy',
+    n_jobs=-1
+)
+
+# Calculate mean
+train_mean = train_scores.mean(axis=1)
+val_mean = val_scores.mean(axis=1)
+
+# Plot
+plt.figure(figsize=(10, 6))
+plt.plot(param_range, train_mean, label='Training score', marker='o')
+plt.plot(param_range, val_mean, label='Validation score', marker='o')
+plt.xlabel('max_depth')
+plt.ylabel('Accuracy')
+plt.title('Validation Curve')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Find optimal value
+optimal_depth = param_range[np.argmax(val_mean)]
+print(f"Optimal max_depth: {optimal_depth}")
+```
+
+## Avoiding Overfitting
+
+### Techniques to Prevent Overfitting
+
+```python
+# 1. More training data
+# 2. Regularization (Ridge, Lasso)
+# 3. Simpler model (reduce depth, features)
+# 4. Cross-validation
+# 5. Early stopping (for iterative algorithms)
+# 6. Dropout (for neural networks)
+# 7. Ensemble methods (Random Forest, XGBoost)
+
+# Example: Regularization
+from sklearn.linear_model import Ridge, Lasso
+
+# Ridge (L2 regularization)
+ridge = Ridge(alpha=1.0)
+ridge.fit(X_train, y_train)
+
+# Lasso (L1 regularization + feature selection)
+lasso = Lasso(alpha=0.1)
+lasso.fit(X_train, y_train)
+
+# Compare
+print(f"Linear Regression - Test R²: {LinearRegression().fit(X_train, y_train).score(X_test, y_test):.3f}")
+print(f"Ridge Regression - Test R²: {ridge.score(X_test, y_test):.3f}")
+print(f"Lasso Regression - Test R²: {lasso.score(X_test, y_test):.3f}")
+```
+
+## Complete Example: End-to-End Model Selection
+
+```python
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, roc_auc_score
+
+# Load data
+cancer = load_breast_cancer()
+X_train, X_test, y_train, y_test = train_test_split(
+    cancer.data, cancer.target, test_size=0.2, random_state=42
+)
+
+# Define models with pipelines
+models = {
+    'Logistic Regression': Pipeline([
+        ('scaler', StandardScaler()),
+        ('classifier', LogisticRegression(max_iter=1000))
+    ]),
+    'Random Forest': Pipeline([
+        ('classifier', RandomForestClassifier(random_state=42))
+    ]),
+    'Gradient Boosting': Pipeline([
+        ('scaler', StandardScaler()),
+        ('classifier', GradientBoostingClassifier(random_state=42))
+    ]),
+    'SVM': Pipeline([
+        ('scaler', StandardScaler()),
+        ('classifier', SVC(probability=True, random_state=42))
+    ])
+}
+
+# Parameter grids
+param_grids = {
+    'Logistic Regression': {
+        'classifier__C': [0.1, 1.0, 10.0],
+        'classifier__penalty': ['l2']
+    },
+    'Random Forest': {
+        'classifier__n_estimators': [50, 100],
+        'classifier__max_depth': [5, 10, None]
+    },
+    'Gradient Boosting': {
+        'classifier__n_estimators': [50, 100],
+        'classifier__learning_rate': [0.01, 0.1],
+        'classifier__max_depth': [3, 5]
+    },
+    'SVM': {
+        'classifier__C': [0.1, 1.0, 10.0],
+        'classifier__kernel': ['rbf', 'linear']
+    }
+}
+
+# Train and evaluate each model
+results = []
+
+for name, model in models.items():
+    print(f"\nTraining {name}...")
+
+    # Grid search
+    grid_search = GridSearchCV(
+        model,
+        param_grids[name],
+        cv=5,
+        scoring='roc_auc',
+        n_jobs=-1,
+        verbose=0
+    )
+
+    grid_search.fit(X_train, y_train)
+
+    # Best model
+    best_model = grid_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+    y_pred_proba = best_model.predict_proba(X_test)[:, 1]
+
+    # Evaluate
+    auc = roc_auc_score(y_test, y_pred_proba)
+
+    results.append({
+        'Model': name,
+        'Best Params': grid_search.best_params_,
+        'CV ROC-AUC': grid_search.best_score_,
+        'Test ROC-AUC': auc
+    })
+
+    print(f"Best params: {grid_search.best_params_}")
+    print(f"CV ROC-AUC: {grid_search.best_score_:.3f}")
+    print(f"Test ROC-AUC: {auc:.3f}")
+
+# Compare models
+results_df = pd.DataFrame(results).sort_values('Test ROC-AUC', ascending=False)
+print("\n" + "="*80)
+print("MODEL COMPARISON")
+print("="*80)
+print(results_df.to_string(index=False))
+
+# Select best model
+best_model_name = results_df.iloc[0]['Model']
+print(f"\n🏆 Best Model: {best_model_name}")
+```
+
+## Practice Exercises
+
+### Exercise 1: Metric Selection
+
+```python
+# Scenario: Email spam detection (1% spam rate)
+# Model A: 99% accuracy (predicts all "not spam")
+# Model B: 95% accuracy (catches 80% of spam)
+
+# Question: Which is better? Why?
+# Your answer should consider:
+# - Class imbalance
+# - Appropriate metric (precision, recall, F1)
+# - Cost of false positives vs false negatives
+```
+
+### Exercise 2: Hyperparameter Tuning
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.svm import SVC
+
+iris = load_iris()
+X_train, X_test, y_train, y_test = train_test_split(
+    iris.data, iris.target, test_size=0.3, random_state=42
+)
+
+# Task: Find best hyperparameters for SVM
+# Try: C=[0.1, 1, 10, 100], gamma=['scale', 'auto', 0.1, 0.01]
+# Use GridSearchCV with 5-fold CV
+# Report best parameters and test accuracy
+```
+
+### Exercise 3: Learning Curve Analysis
+
+```python
+# Task: Create and interpret learning curve
+# 1. Use RandomForestClassifier
+# 2. Plot learning curve
+# 3. Diagnose: overfitting, underfitting, or good fit?
+# 4. Suggest improvements
+```
+
+## Interview Questions
+
+**Q1: What is cross-validation and why use it?**
+Splits data into K folds, trains K times (each fold used as validation once).
+- More reliable estimate than single train/test split
+- Reduces variance in results
+- Better use of limited data
+
+**Q2: GridSearchCV vs RandomizedSearchCV?**
+- **GridSearch**: Tests all combinations (exhaustive, slow)
+- **RandomizedSearch**: Tests random sample (faster, good enough)
+- Use GridSearch for small grids, RandomizedSearch for large
+
+**Q3: When to use accuracy vs F1-score?**
+- **Accuracy**: Balanced classes, all errors equal cost
+- **F1**: Imbalanced classes, need balance of precision and recall
+
+**Q4: What is overfitting? How to detect and fix?**
+```python
+# Detect:
+Train score: 99%  # Too good!
+Test score: 65%   # Poor generalization
+
+# Fix:
+- More training data
+- Regularization (Ridge, Lasso)
+- Simpler model
+- Cross-validation
+- Feature selection
+```
+
+**Q5: ROC-AUC vs Accuracy?**
+- **Accuracy**: Good for balanced classes
+- **ROC-AUC**: Better for imbalanced classes, threshold-independent
+- AUC = 1.0 → Perfect, AUC = 0.5 → Random
+
+**Q6: Learning curve shows high training score but low validation score. What's wrong?**
+**Overfitting!** Solutions:
+- Get more data
+- Reduce model complexity
+- Add regularization
+- Feature selection
+
+## Key Takeaways
+
+✅ **Choose metrics wisely** based on problem and class balance
+✅ **Always use cross-validation** for reliable estimates
+✅ **Grid/RandomizedSearch** for hyperparameter tuning
+✅ **Learning curves** diagnose overfitting/underfitting
+✅ **ROC-AUC** better than accuracy for imbalanced data
+✅ **F1-score** balances precision and recall
+✅ **Don't overfit!** Regularize, validate, simplify
+
+**Part 8** covers neural networks and final interview prep! 🚀
+
+---
+
+*Series Progress: 7/8 - Final part coming up!*

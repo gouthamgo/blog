@@ -1,0 +1,710 @@
+---
+title: "Machine Learning from A to Z: Part 3 - The ML Pipeline"
+description: "Master data preprocessing, feature engineering, train-test split, cross-validation, and building production-ready ML pipelines with scikit-learn."
+date: "2025-10-25"
+author: "Goutham"
+tags: ["Machine Learning", "Data Preprocessing", "Feature Engineering", "Pipeline", "scikit-learn"]
+image: "/images/ml-pipeline.svg"
+readTime: "25 min read"
+---
+
+# Machine Learning from A to Z: Part 3 - The ML Pipeline
+
+Build production-ready ML systems! Master data preprocessing, feature engineering, and complete pipelines.
+
+## The Complete ML Pipeline
+
+```
+1. Data Collection
+   ↓
+2. Exploratory Data Analysis (EDA)
+   ↓
+3. Data Preprocessing
+   ↓
+4. Feature Engineering
+   ↓
+5. Train-Test Split
+   ↓
+6. Model Selection
+   ↓
+7. Model Training
+   ↓
+8. Model Evaluation
+   ↓
+9. Hyperparameter Tuning
+   ↓
+10. Deployment
+```
+
+## 1. Data Collection
+
+```python
+import pandas as pd
+import numpy as np
+
+# From CSV
+df = pd.read_csv('data.csv')
+
+# From API
+import requests
+response = requests.get('https://api.example.com/data')
+data = response.json()
+
+# From database
+import sqlite3
+conn = sqlite3.connect('database.db')
+df = pd.read_sql_query("SELECT * FROM customers", conn)
+
+# From web scraping (be ethical!)
+from bs4 import BeautifulSoup
+# ... scraping code
+
+# Sample dataset for this tutorial
+df = pd.DataFrame({
+    'age': [25, 35, np.nan, 45, 22, 50, 28],
+    'income': [50000, 80000, 65000, 100000, np.nan, 120000, 55000],
+    'purchases': [5, 15, 10, 25, 3, 30, 8],
+    'member_years': [1, 5, 3, 8, 0, 10, 2],
+    'gender': ['M', 'F', 'F', 'M', 'M', 'F', 'M'],
+    'bought_premium': [0, 1, 0, 1, 0, 1, 0]
+})
+```
+
+## 2. Exploratory Data Analysis (EDA)
+
+### Understanding Your Data
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Basic info
+print(df.info())
+print("\nShape:", df.shape)
+print("\nFirst rows:")
+print(df.head())
+
+# Statistical summary
+print("\nStatistics:")
+print(df.describe())
+
+# Check for missing values
+print("\nMissing values:")
+print(df.isnull().sum())
+
+# Check for duplicates
+print("\nDuplicates:", df.duplicated().sum())
+```
+
+**Output:**
+```
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 7 entries, 0 to 6
+Columns: 6 entries, age to bought_premium
+dtypes: float64(3), int64(2), object(1)
+
+Missing values:
+age                1
+income             1
+purchases          0
+member_years       0
+gender             0
+bought_premium     0
+```
+
+### Visualizing Data
+
+```python
+# Distribution plots
+fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+# Age distribution
+axes[0, 0].hist(df['age'].dropna(), bins=10, edgecolor='black')
+axes[0, 0].set_title('Age Distribution')
+axes[0, 0].set_xlabel('Age')
+
+# Income vs Purchases
+axes[0, 1].scatter(df['income'], df['purchases'])
+axes[0, 1].set_title('Income vs Purchases')
+axes[0, 1].set_xlabel('Income')
+axes[0, 1].set_ylabel('Purchases')
+
+# Correlation heatmap
+numeric_df = df.select_dtypes(include=[np.number])
+sns.heatmap(numeric_df.corr(), annot=True, ax=axes[1, 0], cmap='coolwarm')
+axes[1, 0].set_title('Correlation Matrix')
+
+# Box plot
+axes[1, 1].boxplot([df['age'].dropna(), df['income'].dropna()])
+axes[1, 1].set_xticklabels(['Age', 'Income'])
+axes[1, 1].set_title('Box Plots')
+
+plt.tight_layout()
+plt.show()
+```
+
+### Identifying Patterns
+
+```python
+# Group analysis
+print("Premium members analysis:")
+print(df.groupby('bought_premium').mean())
+
+# Correlation analysis
+print("\nCorrelations with target:")
+print(numeric_df.corr()['bought_premium'].sort_values(ascending=False))
+
+# Outlier detection
+from scipy import stats
+z_scores = np.abs(stats.zscore(df[['age', 'income']].dropna()))
+outliers = (z_scores > 3).any(axis=1)
+print(f"\nOutliers detected: {outliers.sum()}")
+```
+
+## 3. Data Preprocessing
+
+### Handling Missing Values
+
+```python
+# Method 1: Remove rows with missing values
+df_dropped = df.dropna()
+print("After dropping:", df_dropped.shape)
+
+# Method 2: Fill with mean/median/mode
+df_filled = df.copy()
+df_filled['age'].fillna(df_filled['age'].mean(), inplace=True)
+df_filled['income'].fillna(df_filled['income'].median(), inplace=True)
+
+# Method 3: Forward/backward fill
+df_ffill = df.fillna(method='ffill')  # Forward fill
+
+# Method 4: Use ML to predict missing values (advanced)
+from sklearn.impute import SimpleImputer
+
+imputer = SimpleImputer(strategy='mean')
+df_imputed = df.copy()
+df_imputed[['age', 'income']] = imputer.fit_transform(df[['age', 'income']])
+
+print("\nAfter imputation:")
+print(df_imputed.isnull().sum())
+```
+
+### Handling Outliers
+
+```python
+# Method 1: IQR method
+def remove_outliers_iqr(df, column):
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    return df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
+
+df_no_outliers = remove_outliers_iqr(df, 'income')
+
+# Method 2: Z-score method
+from scipy import stats
+df_no_outliers = df[(np.abs(stats.zscore(df[['income']].dropna())) < 3).all(axis=1)]
+
+# Method 3: Cap outliers (Winsorization)
+def cap_outliers(df, column, percentile=0.95):
+    upper_limit = df[column].quantile(percentile)
+    lower_limit = df[column].quantile(1 - percentile)
+    df[column] = df[column].clip(lower_limit, upper_limit)
+    return df
+```
+
+### Encoding Categorical Variables
+
+```python
+# Method 1: Label Encoding (ordinal data)
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+df['gender_encoded'] = le.fit_transform(df['gender'])
+print(df[['gender', 'gender_encoded']].head())
+# M → 0, F → 1
+
+# Method 2: One-Hot Encoding (nominal data)
+df_encoded = pd.get_dummies(df, columns=['gender'], prefix='gender')
+print(df_encoded.columns)
+# Creates: gender_M, gender_F
+
+# Method 3: Target Encoding (for high cardinality)
+target_means = df.groupby('gender')['bought_premium'].mean()
+df['gender_target_encoded'] = df['gender'].map(target_means)
+
+# Example with more categories
+df_city = pd.DataFrame({
+    'city': ['NYC', 'LA', 'NYC', 'Chicago', 'LA'],
+    'price': [300, 250, 320, 200, 240]
+})
+df_city_encoded = pd.get_dummies(df_city, columns=['city'])
+print(df_city_encoded)
+```
+
+### Feature Scaling
+
+```python
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+
+# Method 1: Standardization (mean=0, std=1)
+scaler = StandardScaler()
+df_scaled = df.copy()
+df_scaled[['age', 'income']] = scaler.fit_transform(df[['age', 'income']])
+print("After StandardScaler:")
+print(df_scaled[['age', 'income']].describe())
+
+# Method 2: Normalization (0 to 1)
+minmax_scaler = MinMaxScaler()
+df_normalized = df.copy()
+df_normalized[['age', 'income']] = minmax_scaler.fit_transform(df[['age', 'income']])
+print("\nAfter MinMaxScaler:")
+print(df_normalized[['age', 'income']].describe())
+
+# Method 3: Robust Scaling (resistant to outliers)
+robust_scaler = RobustScaler()
+df_robust = df.copy()
+df_robust[['age', 'income']] = robust_scaler.fit_transform(df[['age', 'income']])
+
+# When to use what?
+# StandardScaler: When data is normally distributed
+# MinMaxScaler: When you need bounded values (0-1)
+# RobustScaler: When you have outliers
+```
+
+## 4. Feature Engineering
+
+### Creating New Features
+
+```python
+# Mathematical transformations
+df['income_per_year'] = df['income'] / df['member_years']
+df['log_income'] = np.log1p(df['income'])  # log(1 + x)
+df['income_squared'] = df['income'] ** 2
+
+# Binning
+df['age_group'] = pd.cut(df['age'], bins=[0, 30, 50, 100],
+                         labels=['Young', 'Middle', 'Senior'])
+
+# Date features
+df['date'] = pd.to_datetime(['2023-01-15', '2023-06-20', '2023-03-10',
+                              '2023-12-05', '2023-02-28', '2023-09-14', '2023-04-22'])
+df['year'] = df['date'].dt.year
+df['month'] = df['date'].dt.month
+df['day_of_week'] = df['date'].dt.dayofweek
+df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
+
+# Interaction features
+df['age_income'] = df['age'] * df['income']
+df['purchases_per_year'] = df['purchases'] / df['member_years']
+
+# Aggregation features
+df['avg_purchase_value'] = df['income'] / df['purchases']
+
+print("New features created:")
+print(df.columns.tolist())
+```
+
+### Feature Selection
+
+```python
+from sklearn.feature_selection import SelectKBest, chi2, mutual_info_classif
+from sklearn.ensemble import RandomForestClassifier
+
+# Prepare data
+X = df[['age', 'income', 'purchases', 'member_years']].fillna(0)
+y = df['bought_premium']
+
+# Method 1: Correlation-based
+correlations = X.corrwith(y).abs().sort_values(ascending=False)
+print("Feature correlations with target:")
+print(correlations)
+
+# Method 2: SelectKBest
+selector = SelectKBest(score_func=mutual_info_classif, k=3)
+X_selected = selector.fit_transform(X, y)
+selected_features = X.columns[selector.get_support()].tolist()
+print("\nTop 3 features:", selected_features)
+
+# Method 3: Feature importance from tree models
+rf = RandomForestClassifier(random_state=42)
+rf.fit(X, y)
+feature_importance = pd.DataFrame({
+    'feature': X.columns,
+    'importance': rf.feature_importances_
+}).sort_values('importance', ascending=False)
+print("\nFeature Importance:")
+print(feature_importance)
+
+# Visualize feature importance
+import matplotlib.pyplot as plt
+plt.barh(feature_importance['feature'], feature_importance['importance'])
+plt.xlabel('Importance')
+plt.title('Feature Importance')
+plt.show()
+```
+
+## 5. Train-Test Split
+
+```python
+from sklearn.model_selection import train_test_split
+
+# Basic split (80-20)
+X = df[['age', 'income', 'purchases', 'member_years']].fillna(df.mean())
+y = df['bought_premium']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+print(f"Training set: {X_train.shape}")
+print(f"Test set: {X_test.shape}")
+
+# Stratified split (preserve class distribution)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+print("\nClass distribution:")
+print("Train:", y_train.value_counts(normalize=True))
+print("Test:", y_test.value_counts(normalize=True))
+
+# Time series split (don't shuffle!)
+# For time-based data, keep temporal order
+from sklearn.model_selection import TimeSeriesSplit
+
+tscv = TimeSeriesSplit(n_splits=3)
+for train_idx, test_idx in tscv.split(X):
+    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    # Train and evaluate model
+```
+
+## 6. Cross-Validation
+
+```python
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+
+# K-Fold Cross-Validation
+kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(model, X, y, cv=kfold, scoring='accuracy')
+
+print("Cross-validation scores:", scores)
+print(f"Mean accuracy: {scores.mean():.2%}")
+print(f"Std deviation: {scores.std():.2%}")
+
+# Stratified K-Fold (better for imbalanced data)
+from sklearn.model_selection import StratifiedKFold
+
+skfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(model, X, y, cv=skfold, scoring='accuracy')
+print(f"\nStratified CV Mean: {scores.mean():.2%}")
+
+# Leave-One-Out Cross-Validation (for small datasets)
+from sklearn.model_selection import LeaveOneOut
+
+loo = LeaveOneOut()
+scores = cross_val_score(model, X, y, cv=loo, scoring='accuracy')
+print(f"LOO CV Accuracy: {scores.mean():.2%}")
+```
+
+## 7. Building a Complete Pipeline
+
+```python
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.compose import ColumnTransformer
+
+# Separate numeric and categorical columns
+numeric_features = ['age', 'income', 'purchases', 'member_years']
+categorical_features = ['gender']
+
+# Numeric pipeline
+numeric_pipeline = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+# Categorical pipeline
+categorical_pipeline = Pipeline([
+    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+    ('onehot', pd.get_dummies)  # Or use OneHotEncoder
+])
+
+# Combine pipelines
+preprocessor = ColumnTransformer([
+    ('num', numeric_pipeline, numeric_features),
+    ('cat', categorical_pipeline, categorical_features)
+])
+
+# Full pipeline
+full_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', RandomForestClassifier(random_state=42))
+])
+
+# Train pipeline
+full_pipeline.fit(X_train, y_train)
+
+# Predict
+predictions = full_pipeline.predict(X_test)
+accuracy = full_pipeline.score(X_test, y_test)
+print(f"Pipeline Accuracy: {accuracy:.2%}")
+
+# Pipeline benefits:
+# ✅ Prevents data leakage
+# ✅ Easier to deploy
+# ✅ Clean code
+# ✅ Easy to experiment
+```
+
+## Real-World Example: Credit Card Fraud Detection
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Simulate credit card transaction data
+np.random.seed(42)
+n_samples = 1000
+
+df = pd.DataFrame({
+    'amount': np.random.exponential(100, n_samples),
+    'time': np.random.randint(0, 86400, n_samples),  # Seconds in a day
+    'merchant_category': np.random.choice(['grocery', 'gas', 'restaurant', 'online'], n_samples),
+    'distance_from_home': np.random.exponential(10, n_samples),
+    'distance_from_last': np.random.exponential(5, n_samples),
+})
+
+# Create fraud labels (2% fraud rate)
+df['is_fraud'] = (
+    (df['amount'] > 500) &
+    (df['distance_from_home'] > 50)
+).astype(int)
+
+# Add noise
+fraud_mask = np.random.random(n_samples) < 0.02
+df.loc[fraud_mask, 'is_fraud'] = 1 - df.loc[fraud_mask, 'is_fraud']
+
+print("Fraud rate:", df['is_fraud'].mean())
+print("\nDataset shape:", df.shape)
+print("\nFirst rows:")
+print(df.head())
+
+# EDA
+print("\nFraud statistics:")
+print(df.groupby('is_fraud').mean())
+
+# Feature engineering
+df['hour'] = (df['time'] / 3600).astype(int)
+df['is_night'] = df['hour'].between(22, 6).astype(int)
+df['amount_log'] = np.log1p(df['amount'])
+
+# Encoding
+df_encoded = pd.get_dummies(df, columns=['merchant_category'], drop_first=True)
+
+# Prepare features
+feature_cols = [col for col in df_encoded.columns if col != 'is_fraud']
+X = df_encoded[feature_cols]
+y = df_encoded['is_fraud']
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+# Build pipeline
+from sklearn.pipeline import Pipeline
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('classifier', RandomForestClassifier(
+        n_estimators=100,
+        max_depth=10,
+        class_weight='balanced',  # Important for imbalanced data!
+        random_state=42
+    ))
+])
+
+# Train
+pipeline.fit(X_train, y_train)
+
+# Evaluate
+y_pred = pipeline.predict(X_test)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.title('Confusion Matrix')
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.show()
+
+# Feature importance
+rf = pipeline.named_steps['classifier']
+feature_importance = pd.DataFrame({
+    'feature': feature_cols,
+    'importance': rf.feature_importances_
+}).sort_values('importance', ascending=False)
+
+print("\nTop 5 Important Features:")
+print(feature_importance.head())
+```
+
+## Practice Exercises
+
+### Exercise 1: Complete Preprocessing Pipeline
+
+```python
+# Create and preprocess this messy dataset
+messy_data = pd.DataFrame({
+    'age': [25, None, 35, 200, 45],  # Has missing & outlier
+    'income': [50000, 60000, None, 80000, 90000],
+    'city': ['NYC', 'LA', 'NYC', 'SF', 'LA'],
+    'score': [0.5, 0.8, 0.3, 0.9, 0.6]
+})
+
+# Task: Clean this data!
+# 1. Handle missing values
+# 2. Remove/cap outliers
+# 3. Encode categorical variables
+# 4. Scale numeric features
+```
+
+**Solution:**
+```python
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+
+# 1. Handle missing values
+imputer = SimpleImputer(strategy='median')
+messy_data[['age', 'income']] = imputer.fit_transform(messy_data[['age', 'income']])
+
+# 2. Cap outliers (age > 100 is likely an error)
+messy_data['age'] = messy_data['age'].clip(0, 100)
+
+# 3. Encode city
+messy_data = pd.get_dummies(messy_data, columns=['city'])
+
+# 4. Scale
+scaler = StandardScaler()
+messy_data[['age', 'income', 'score']] = scaler.fit_transform(
+    messy_data[['age', 'income', 'score']]
+)
+
+print(messy_data)
+```
+
+### Exercise 2: Feature Engineering
+
+```python
+# Create useful features from this sales data
+sales = pd.DataFrame({
+    'date': pd.date_range('2023-01-01', periods=100),
+    'sales': np.random.randint(100, 1000, 100),
+    'customers': np.random.randint(10, 100, 100)
+})
+
+# Create these features:
+# 1. Day of week
+# 2. Is weekend
+# 3. Week of year
+# 4. Sales per customer
+# 5. 7-day rolling average
+```
+
+**Solution:**
+```python
+sales['day_of_week'] = sales['date'].dt.dayofweek
+sales['is_weekend'] = sales['day_of_week'].isin([5, 6]).astype(int)
+sales['week_of_year'] = sales['date'].dt.isocalendar().week
+sales['sales_per_customer'] = sales['sales'] / sales['customers']
+sales['sales_rolling_7d'] = sales['sales'].rolling(7).mean()
+
+print(sales.head(10))
+```
+
+## Interview Questions
+
+**Q1: Why split data into training and testing sets?**
+- Training set: Teach the model
+- Test set: Evaluate performance on unseen data
+- Prevents overfitting (model memorizing training data)
+
+**Q2: What is data leakage?**
+When information from test set "leaks" into training, causing overly optimistic results.
+
+**Example:**
+```python
+# ❌ Wrong: Scale before split
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)  # Sees all data!
+X_train, X_test = train_test_split(X_scaled)
+
+# ✅ Correct: Scale after split
+X_train, X_test = train_test_split(X)
+scaler.fit(X_train)  # Only sees training data
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+```
+
+**Q3: When to use StandardScaler vs MinMaxScaler?**
+- **StandardScaler**: Data is normally distributed, many outliers okay
+- **MinMaxScaler**: Need bounded values (0-1), neural networks
+- **RobustScaler**: Many outliers present
+
+**Q4: How to handle imbalanced datasets?**
+```python
+# 1. Oversample minority class
+from imblearn.over_sampling import SMOTE
+smote = SMOTE()
+X_resampled, y_resampled = smote.fit_resample(X, y)
+
+# 2. Undersample majority class
+from imblearn.under_sampling import RandomUnderSampler
+
+# 3. Use class weights
+model = RandomForestClassifier(class_weight='balanced')
+
+# 4. Change evaluation metric (use F1, not accuracy)
+```
+
+**Q5: What is cross-validation and why use it?**
+- Splits data into K folds
+- Trains K times, each fold used as test set once
+- More reliable performance estimate
+- Reduces variance in results
+
+## Key Takeaways
+
+✅ **EDA first**: Understand your data before modeling
+✅ **Handle missing values**: Don't ignore them!
+✅ **Scale features**: Essential for distance-based algorithms
+✅ **Encode categoricals**: ML models need numbers
+✅ **Feature engineering**: Often more important than algorithm choice
+✅ **Always split data**: Train/test or cross-validation
+✅ **Use pipelines**: Prevents leakage, cleaner code
+✅ **Check for leakage**: Fit only on training data!
+
+**Part 4** covers regression algorithms in depth! 🚀
+
+---
+
+*Series Progress: 3/8 - Next up: Regression Algorithms!*

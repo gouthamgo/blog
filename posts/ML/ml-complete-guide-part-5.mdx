@@ -1,0 +1,725 @@
+---
+title: "Machine Learning from A to Z: Part 5 - Classification Algorithms"
+description: "Master classification: Logistic Regression, Decision Trees, Random Forests, SVM, Naive Bayes, and more. Build real-world classifiers with Python."
+date: "2025-10-25"
+author: "Goutham"
+tags: ["Machine Learning", "Classification", "Logistic Regression", "SVM", "Random Forest"]
+image: "/images/ml-classification.svg"
+readTime: "24 min read"
+---
+
+# Machine Learning from A to Z: Part 5 - Classification Algorithms
+
+Predict categories! Master all major classification algorithms with practical examples.
+
+## What is Classification?
+
+**Classification** predicts a discrete category/class label.
+
+```python
+# Examples of classification problems:
+- Email: Spam or Not Spam (Binary)
+- Image: Cat or Dog (Binary)
+- Diagnosis: Benign or Malignant (Binary)
+- Digit Recognition: 0-9 (Multi-class)
+- Sentiment: Positive, Neutral, Negative (Multi-class)
+```
+
+## Binary vs Multi-class Classification
+
+```python
+# Binary Classification (2 classes)
+y = [0, 1, 0, 1, 1]  # 0 = No, 1 = Yes
+
+# Multi-class Classification (3+ classes)
+y = [0, 1, 2, 0, 2, 1]  # 0 = Cat, 1 = Dog, 2 = Bird
+
+# Multi-label Classification (multiple labels per sample)
+y = [[1, 0, 1], [0, 1, 0], [1, 1, 0]]  # [action, comedy, drama]
+```
+
+## Logistic Regression
+
+Despite the name, it's a **classification** algorithm!
+
+### Binary Classification
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+cancer = load_breast_cancer()
+X = cancer.data
+y = cancer.target  # 0 = malignant, 1 = benign
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train model
+model = LogisticRegression(max_iter=10000)
+model.fit(X_train, y_train)
+
+# Predict
+y_pred = model.predict(X_test)
+
+# Evaluate
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.2%}")
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred,
+                           target_names=cancer.target_names))
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+           xticklabels=cancer.target_names,
+           yticklabels=cancer.target_names)
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Probability predictions
+probabilities = model.predict_proba(X_test[:5])
+print("\nProbability Predictions (first 5):")
+for i, (prob, pred) in enumerate(zip(probabilities, y_pred[:5])):
+    print(f"Sample {i}: {prob[0]:.2%} malignant, {prob[1]:.2%} benign → {cancer.target_names[pred]}")
+```
+
+**Output:**
+```
+Accuracy: 96.49%
+
+Classification Report:
+              precision    recall  f1-score   support
+   malignant       0.95      0.93      0.94        43
+      benign       0.97      0.98      0.97        71
+
+Sample 0: 0.01% malignant, 99.99% benign → benign
+```
+
+### Understanding Logistic Regression
+
+```python
+# How it works: Sigmoid function
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# Visualize sigmoid
+z = np.linspace(-10, 10, 100)
+plt.plot(z, sigmoid(z))
+plt.axhline(y=0.5, color='r', linestyle='--', label='Decision boundary')
+plt.xlabel('z (linear combination)')
+plt.ylabel('Probability')
+plt.title('Sigmoid Function')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Decision boundary at 0.5
+# If P(y=1) > 0.5 → Predict class 1
+# If P(y=1) < 0.5 → Predict class 0
+```
+
+## Decision Tree Classifier
+
+```python
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.datasets import load_iris
+
+# Load iris dataset
+iris = load_iris()
+X_train, X_test, y_train, y_test = train_test_split(
+    iris.data, iris.target, test_size=0.3, random_state=42
+)
+
+# Train decision tree
+tree = DecisionTreeClassifier(
+    max_depth=3,              # Limit depth to prevent overfitting
+    min_samples_split=5,
+    criterion='gini',         # or 'entropy'
+    random_state=42
+)
+tree.fit(X_train, y_train)
+
+# Evaluate
+accuracy = tree.score(X_test, y_test)
+print(f"Accuracy: {accuracy:.2%}")
+
+# Visualize tree
+plt.figure(figsize=(20, 10))
+plot_tree(tree,
+         feature_names=iris.feature_names,
+         class_names=iris.target_names,
+         filled=True,
+         rounded=True,
+         fontsize=10)
+plt.title('Decision Tree Classifier')
+plt.show()
+
+# Feature importance
+feature_importance = pd.DataFrame({
+    'feature': iris.feature_names,
+    'importance': tree.feature_importances_
+}).sort_values('importance', ascending=False)
+
+print("\nFeature Importance:")
+print(feature_importance)
+
+# Predict with interpretation
+sample = X_test[0:1]
+prediction = tree.predict(sample)
+proba = tree.predict_proba(sample)
+
+print(f"\nPrediction: {iris.target_names[prediction[0]]}")
+print(f"Probabilities: {proba[0]}")
+```
+
+## Random Forest Classifier
+
+Ensemble of decision trees for better accuracy.
+
+```python
+from sklearn.ensemble import RandomForestClassifier
+
+# Train Random Forest
+rf = RandomForestClassifier(
+    n_estimators=100,       # Number of trees
+    max_depth=5,
+    min_samples_split=5,
+    random_state=42,
+    n_jobs=-1
+)
+rf.fit(X_train, y_train)
+
+# Evaluate
+print("Random Forest:")
+print(f"Train Accuracy: {rf.score(X_train, y_train):.2%}")
+print(f"Test Accuracy: {rf.score(X_test, y_test):.2%}")
+
+# Compare with single tree
+print("\nSingle Decision Tree:")
+print(f"Test Accuracy: {tree.score(X_test, y_test):.2%}")
+
+# Feature importance (averaged across all trees)
+feature_imp = pd.DataFrame({
+    'feature': iris.feature_names,
+    'importance': rf.feature_importances_
+}).sort_values('importance', ascending=False)
+
+print("\nFeature Importance (Random Forest):")
+print(feature_imp)
+```
+
+## K-Nearest Neighbors (KNN)
+
+Classifies based on k closest training examples.
+
+```python
+from sklearn.neighbors import KNeighborsClassifier
+
+# Train KNN
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+
+# Evaluate
+accuracy = knn.score(X_test, y_test)
+print(f"KNN Accuracy (k=5): {accuracy:.2%}")
+
+# Try different k values
+k_values = range(1, 31)
+accuracies = []
+
+for k in k_values:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
+    accuracies.append(knn.score(X_test, y_test))
+
+# Plot accuracy vs k
+plt.plot(k_values, accuracies, marker='o')
+plt.xlabel('k (number of neighbors)')
+plt.ylabel('Accuracy')
+plt.title('KNN: Accuracy vs k')
+plt.grid(True)
+plt.show()
+
+best_k = k_values[np.argmax(accuracies)]
+print(f"\nBest k: {best_k} with accuracy {max(accuracies):.2%}")
+```
+
+### How KNN Works
+
+```python
+# Example: Classify new point based on 3 nearest neighbors
+import matplotlib.pyplot as plt
+
+# Training data
+X_train_2d = np.array([[1, 2], [2, 3], [3, 1], [6, 5], [7, 7], [8, 6]])
+y_train_2d = np.array([0, 0, 0, 1, 1, 1])  # 0 = red, 1 = blue
+
+# New point to classify
+new_point = np.array([[4, 4]])
+
+# Visualize
+plt.scatter(X_train_2d[y_train_2d==0, 0], X_train_2d[y_train_2d==0, 1],
+           c='red', label='Class 0', s=100)
+plt.scatter(X_train_2d[y_train_2d==1, 0], X_train_2d[y_train_2d==1, 1],
+           c='blue', label='Class 1', s=100)
+plt.scatter(new_point[0, 0], new_point[0, 1],
+           c='green', marker='*', s=300, label='New point')
+
+# Find 3 nearest neighbors
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train_2d, y_train_2d)
+prediction = knn.predict(new_point)
+
+plt.title(f'KNN Classification (k=3) → Class {prediction[0]}')
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+
+## Support Vector Machine (SVM)
+
+Finds optimal decision boundary between classes.
+
+```python
+from sklearn.svm import SVC
+
+# Linear SVM
+svm_linear = SVC(kernel='linear', random_state=42)
+svm_linear.fit(X_train, y_train)
+print(f"Linear SVM Accuracy: {svm_linear.score(X_test, y_test):.2%}")
+
+# RBF (Radial Basis Function) SVM - for non-linear data
+svm_rbf = SVC(kernel='rbf', gamma='auto', random_state=42)
+svm_rbf.fit(X_train, y_train)
+print(f"RBF SVM Accuracy: {svm_rbf.score(X_test, y_test):.2%}")
+
+# Polynomial SVM
+svm_poly = SVC(kernel='poly', degree=3, random_state=42)
+svm_poly.fit(X_train, y_train)
+print(f"Polynomial SVM Accuracy: {svm_poly.score(X_test, y_test):.2%}")
+```
+
+### Visualizing SVM Decision Boundary
+
+```python
+from sklearn.datasets import make_classification
+
+# Create 2D dataset for visualization
+X, y = make_classification(n_samples=100, n_features=2,
+                          n_redundant=0, n_informative=2,
+                          random_state=42, n_clusters_per_class=1)
+
+# Train SVM
+svm = SVC(kernel='rbf')
+svm.fit(X, y)
+
+# Create mesh for decision boundary
+h = 0.02
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                     np.arange(y_min, y_max, h))
+
+# Predict on mesh
+Z = svm.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+
+# Plot
+plt.contourf(xx, yy, Z, alpha=0.3, cmap='coolwarm')
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap='coolwarm', edgecolors='k')
+plt.title('SVM Decision Boundary')
+plt.show()
+```
+
+## Naive Bayes
+
+Based on Bayes' theorem, assumes feature independence.
+
+```python
+from sklearn.naive_bayes import GaussianNB, MultinomialNB
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Gaussian Naive Bayes (for continuous features)
+gnb = GaussianNB()
+gnb.fit(X_train, y_train)
+print(f"Gaussian NB Accuracy: {gnb.score(X_test, y_test):.2%}")
+
+# Multinomial Naive Bayes (for text/count data)
+# Example: Spam detection
+emails = [
+    "Win free money now",
+    "Meeting at 3pm tomorrow",
+    "Claim your prize today",
+    "Project deadline next week",
+    "You won a million dollars",
+    "Team lunch on Friday"
+]
+labels = [1, 0, 1, 0, 1, 0]  # 1 = spam, 0 = not spam
+
+# Convert text to numbers
+vectorizer = CountVectorizer()
+X_emails = vectorizer.fit_transform(emails)
+
+# Train
+mnb = MultinomialNB()
+mnb.fit(X_emails, labels)
+
+# Predict new emails
+new_emails = ["Free money offer", "Meeting notes"]
+X_new = vectorizer.transform(new_emails)
+predictions = mnb.predict(X_new)
+
+for email, pred in zip(new_emails, predictions):
+    print(f"'{email}' → {'SPAM' if pred == 1 else 'NOT SPAM'}")
+```
+
+## Gradient Boosting Classifier
+
+```python
+from sklearn.ensemble import GradientBoostingClassifier
+
+# Train Gradient Boosting
+gb = GradientBoostingClassifier(
+    n_estimators=100,
+    learning_rate=0.1,
+    max_depth=3,
+    random_state=42
+)
+gb.fit(X_train, y_train)
+
+print(f"Gradient Boosting Accuracy: {gb.score(X_test, y_test):.2%}")
+```
+
+## XGBoost Classifier
+
+```python
+# Install: pip install xgboost
+import xgboost as xgb
+
+# Train XGBoost
+xgb_model = xgb.XGBClassifier(
+    n_estimators=100,
+    learning_rate=0.1,
+    max_depth=5,
+    random_state=42
+)
+xgb_model.fit(X_train, y_train)
+
+print(f"XGBoost Accuracy: {xgb_model.score(X_test, y_test):.2%}")
+```
+
+## Model Comparison
+
+```python
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import time
+
+models = {
+    'Logistic Regression': LogisticRegression(max_iter=1000),
+    'Decision Tree': DecisionTreeClassifier(max_depth=5, random_state=42),
+    'Random Forest': RandomForestClassifier(n_estimators=50, random_state=42),
+    'KNN': KNeighborsClassifier(n_neighbors=5),
+    'SVM': SVC(kernel='rbf', random_state=42),
+    'Naive Bayes': GaussianNB(),
+    'Gradient Boosting': GradientBoostingClassifier(n_estimators=50, random_state=42)
+}
+
+results = []
+
+for name, model in models.items():
+    # Train
+    start = time.time()
+    model.fit(X_train, y_train)
+    train_time = time.time() - start
+
+    # Predict
+    y_pred = model.predict(X_test)
+
+    # Evaluate
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+
+    results.append({
+        'Model': name,
+        'Accuracy': f"{accuracy:.3f}",
+        'Precision': f"{precision:.3f}",
+        'Recall': f"{recall:.3f}",
+        'F1-Score': f"{f1:.3f}",
+        'Time': f"{train_time:.3f}s"
+    })
+
+comparison = pd.DataFrame(results)
+print(comparison.to_string(index=False))
+```
+
+## Real-World Example: Customer Churn Prediction
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, roc_auc_score, roc_curve
+import matplotlib.pyplot as plt
+
+# Create realistic customer data
+np.random.seed(42)
+n = 1000
+
+data = pd.DataFrame({
+    'age': np.random.randint(18, 70, n),
+    'tenure_months': np.random.randint(1, 72, n),
+    'monthly_charges': np.random.uniform(30, 150, n),
+    'total_charges': np.random.uniform(100, 8000, n),
+    'contract': np.random.choice(['Month-to-month', 'One year', 'Two year'], n),
+    'payment_method': np.random.choice(['Electronic', 'Mailed check', 'Bank transfer'], n),
+    'internet_service': np.random.choice(['DSL', 'Fiber optic', 'No'], n),
+    'support_calls': np.random.randint(0, 10, n),
+})
+
+# Generate churn labels (complex logic)
+churn_probability = (
+    (data['contract'] == 'Month-to-month') * 0.3 +
+    (data['tenure_months'] < 12) * 0.2 +
+    (data['support_calls'] > 5) * 0.3 +
+    (data['monthly_charges'] > 100) * 0.2 +
+    np.random.uniform(0, 0.2, n)
+)
+
+data['churned'] = (churn_probability > 0.5).astype(int)
+
+print("Churn rate:", data['churned'].mean())
+print("\nDataset shape:", data.shape)
+print("\nFirst rows:")
+print(data.head())
+
+# Encode categorical variables
+le = LabelEncoder()
+for col in ['contract', 'payment_method', 'internet_service']:
+    data[f'{col}_encoded'] = le.fit_transform(data[col])
+
+# Feature engineering
+data['avg_monthly_charges'] = data['total_charges'] / data['tenure_months']
+data['charges_per_call'] = data['monthly_charges'] / (data['support_calls'] + 1)
+
+# Prepare features
+feature_cols = ['age', 'tenure_months', 'monthly_charges', 'total_charges',
+                'support_calls', 'contract_encoded', 'payment_method_encoded',
+                'internet_service_encoded', 'avg_monthly_charges', 'charges_per_call']
+
+X = data[feature_cols]
+y = data['churned']
+
+# Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+# Scale
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train model
+model = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=10,
+    class_weight='balanced',  # Handle imbalanced data
+    random_state=42
+)
+model.fit(X_train_scaled, y_train)
+
+# Predictions
+y_pred = model.predict(X_test_scaled)
+y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
+
+# Evaluate
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# ROC-AUC
+auc = roc_auc_score(y_test, y_pred_proba)
+print(f"ROC-AUC Score: {auc:.3f}")
+
+# Plot ROC Curve
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {auc:.2f})')
+plt.plot([0, 1], [0, 1], 'k--', label='Random Classifier')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve - Customer Churn')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Feature importance
+feature_imp = pd.DataFrame({
+    'feature': feature_cols,
+    'importance': model.feature_importances_
+}).sort_values('importance', ascending=False)
+
+print("\nTop 5 Features:")
+print(feature_imp.head())
+
+# Predict churn risk for new customer
+new_customer = pd.DataFrame({
+    'age': [35],
+    'tenure_months': [3],
+    'monthly_charges': [120],
+    'total_charges': [360],
+    'support_calls': [7],
+    'contract_encoded': [0],  # Month-to-month
+    'payment_method_encoded': [0],
+    'internet_service_encoded': [1],
+    'avg_monthly_charges': [120],
+    'charges_per_call': [15]
+})
+
+new_customer_scaled = scaler.transform(new_customer)
+churn_prob = model.predict_proba(new_customer_scaled)[0, 1]
+
+print(f"\nNew Customer Churn Risk: {churn_prob:.1%}")
+if churn_prob > 0.7:
+    print("⚠️ HIGH RISK - Offer retention incentive!")
+elif churn_prob > 0.4:
+    print("⚠️ MEDIUM RISK - Monitor closely")
+else:
+    print("✅ LOW RISK - Customer stable")
+```
+
+## Handling Imbalanced Data
+
+```python
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from collections import Counter
+
+# Check class imbalance
+print("Original distribution:", Counter(y_train))
+
+# Method 1: SMOTE (Synthetic Minority Over-sampling)
+smote = SMOTE(random_state=42)
+X_train_sm, y_train_sm = smote.fit_resample(X_train_scaled, y_train)
+print("After SMOTE:", Counter(y_train_sm))
+
+# Method 2: Random Under-sampling
+rus = RandomUnderSampler(random_state=42)
+X_train_rus, y_train_rus = rus.fit_resample(X_train_scaled, y_train)
+print("After Under-sampling:", Counter(y_train_rus))
+
+# Method 3: Class weights (in model)
+model_weighted = RandomForestClassifier(class_weight='balanced')
+model_weighted.fit(X_train_scaled, y_train)
+
+# Compare performance
+print("\nWithout balancing:")
+print(f"Accuracy: {model.score(X_test_scaled, y_test):.2%}")
+
+print("\nWith SMOTE:")
+model_sm = RandomForestClassifier(random_state=42)
+model_sm.fit(X_train_sm, y_train_sm)
+print(f"Accuracy: {model_sm.score(X_test_scaled, y_test):.2%}")
+```
+
+## Practice Exercises
+
+### Exercise 1: Binary Classification
+
+```python
+# Task: Classify if a student will pass or fail
+data = pd.DataFrame({
+    'study_hours': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'sleep_hours': [4, 5, 6, 6, 7, 7, 8, 8, 7, 8],
+    'attendance': [50, 60, 65, 70, 75, 80, 85, 90, 95, 98],
+    'passed': [0, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+})
+
+# Your task:
+# 1. Train Logistic Regression
+# 2. Train Random Forest
+# 3. Compare accuracy
+# 4. Predict for new student: 5 hours study, 7 hours sleep, 80% attendance
+```
+
+### Exercise 2: Multi-class Classification
+
+```python
+from sklearn.datasets import load_wine
+
+wine = load_wine()
+X_train, X_test, y_train, y_test = train_test_split(
+    wine.data, wine.target, test_size=0.3, random_state=42
+)
+
+# Your task:
+# 1. Try 3 different classifiers
+# 2. Compare accuracy
+# 3. Plot confusion matrix for best model
+# 4. Find feature importance
+```
+
+## Interview Questions
+
+**Q1: Logistic Regression vs Linear Regression?**
+- **Linear**: Predicts continuous values (regression)
+- **Logistic**: Predicts probabilities for classification
+
+**Q2: When to use Random Forest vs Logistic Regression?**
+- **Random Forest**: Non-linear relationships, feature interactions, high accuracy
+- **Logistic Regression**: Need interpretability, linear relationships, fast training
+
+**Q3: What is overfitting in classification?**
+```python
+# Model memorizes training data instead of learning patterns
+Train Accuracy: 99%  # Too good!
+Test Accuracy: 65%   # Poor generalization
+```
+
+**Q4: How to handle imbalanced classes?**
+1. Use class weights (`class_weight='balanced'`)
+2. Oversample minority class (SMOTE)
+3. Undersample majority class
+4. Change evaluation metric (F1 instead of accuracy)
+5. Collect more data for minority class
+
+**Q5: Precision vs Recall - when to optimize for each?**
+- **Precision**: When false positives are costly (spam detection)
+- **Recall**: When false negatives are costly (cancer detection)
+```python
+Precision = TP / (TP + FP)  # Of predicted positives, how many correct?
+Recall = TP / (TP + FN)     # Of actual positives, how many found?
+```
+
+## Key Takeaways
+
+✅ **Logistic Regression**: Fast, interpretable, linear decision boundary
+✅ **Decision Tree**: Non-linear, interpretable, prone to overfitting
+✅ **Random Forest**: Ensemble, more accurate, handles non-linearity
+✅ **KNN**: Simple, no training, sensitive to scale
+✅ **SVM**: Powerful for high-dimensional data, kernel trick for non-linearity
+✅ **Naive Bayes**: Fast, works well with text, assumes independence
+✅ **Always check class imbalance** and handle appropriately
+
+**Part 6** covers unsupervised learning algorithms! 🚀
+
+---
+
+*Series Progress: 5/8 - Next up: Unsupervised Learning!*
